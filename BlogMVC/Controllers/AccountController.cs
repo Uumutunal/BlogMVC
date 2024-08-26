@@ -3,27 +3,80 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Twitter;
 using System.Threading.Tasks;
+using BlogMVC.Models;
+using System.Net.Http;
 
 namespace BlogMVC.Controllers
 {
     public class AccountController : Controller
     {
         private const string XsrfKey = "XsrfId";
+        private readonly HttpClient _httpClient;
 
+        public AccountController(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+
+        }
         public IActionResult Login()
         {
             return View();
         }
+
         [HttpPost]
         public IActionResult Login(string username, string password)
+        {
+            if(username == "admin" && password == "123")
+            {
+                ViewBag.Login = "true";
+                HttpContext.Session.SetString("IsLogged", "true");
+                ViewBag.IsAdmin = "true";
+                HttpContext.Session.SetString("IsAdmin", "true");
+
+                return RedirectToAction("Index", "Home");
+            }
+            ViewBag.Login = "false";
+
+            return View();
+        }
+
+        public async Task<IActionResult> Register()
+        {
+
+            //var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:5042/api/Account/users");
+
+            return View();
+		}
+        [HttpPost]
+        public IActionResult Register(string username, string email, string password, string confirmPassword)
         {
             return View();
         }
 
-        public IActionResult Register()
+		public IActionResult Profile()
 		{
-			return View();
+            var user = new UserViewModel() { Email = "a@gmail.com", Username = "admin", Password = "123" };
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+            return View(user);
 		}
+
+        [HttpPost]
+        public IActionResult Profile(string username, string email, string password)
+        {
+            var user = new UserViewModel() { Email = email, Username = username, Password = password };
+            return View(user);
+        }
+
+		public IActionResult Logout()
+		{
+            ViewBag.Logout = "false";
+			HttpContext.Session.SetString("IsLogged", "false");
+			HttpContext.Session.SetString("IsAdmin", "false");
+
+			return RedirectToAction("Index", "Home");
+		}
+
 		public IActionResult Index()
         {
             return View();
@@ -58,7 +111,9 @@ namespace BlogMVC.Controllers
             {
                 return Redirect(returnUrl);
             }
-            return RedirectToAction("Index", "Home");
+
+			HttpContext.Session.SetString("IsLogged", "true");
+			return RedirectToAction("Index", "Home");
         }
     }
 }

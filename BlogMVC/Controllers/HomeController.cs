@@ -15,7 +15,43 @@ namespace BlogMVC.Controllers
 
         public IActionResult Index()
         {
-            return RedirectToAction("Index", "Account");
+
+			if (HttpContext.Session.GetString("IsLogged") != null)
+            {
+				ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+                ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+            }
+            else
+            {
+                ViewBag.Logged = "false";
+
+			}
+
+
+			List<PostViewModel> posts = new List<PostViewModel>();
+
+			posts.Add(new PostViewModel() { Content = "Content", Title = "Title" });
+
+			return View(posts);
+        }
+
+
+		public IActionResult ListUnapprovedPosts()
+		{
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+
+            List<PostViewModel> posts = new List<PostViewModel>();
+
+            posts.Add(new PostViewModel() { Content = "Content" , Title = "Title"});
+
+			return View(posts);
+		}
+
+
+        public IActionResult ApprovePost(Guid Id)
+        {
+            return RedirectToAction("ListUnapprovedPosts");
         }
 
         public IActionResult Privacy()

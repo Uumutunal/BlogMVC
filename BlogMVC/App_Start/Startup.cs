@@ -28,7 +28,16 @@ namespace BlogMVC
             });
 
             services.AddControllersWithViews();
-        }
+
+			// Add session services
+			services.AddDistributedMemoryCache();
+			services.AddSession(options =>
+			{
+				options.IdleTimeout = TimeSpan.FromMinutes(30);
+				options.Cookie.HttpOnly = true;
+				options.Cookie.IsEssential = true;
+			});
+		}
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -46,8 +55,8 @@ namespace BlogMVC
             app.UseStaticFiles();
 
             app.UseRouting();
-
-            app.UseAuthentication(); // Ensure this is called to set up authentication middleware
+			app.UseSession();
+			app.UseAuthentication(); // Ensure this is called to set up authentication middleware
             app.UseAuthorization(); // Ensure this is called to set up authorization middleware
 
             app.UseEndpoints(endpoints =>

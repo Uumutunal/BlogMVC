@@ -1,21 +1,20 @@
 ﻿@model List<PostViewModel>
 
+
+
 @{
-    ViewData["Title"] = "Home Page";
+
+    ViewData["Title"] = "AdminPanel";
     Layout = "~/Views/Template/Index.cshtml";
 
 }
 
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
-
-
-
 <section class="section">
     <div class="container">
+        <div class="col-sm-6">
+            <h2 class="posts-entry-title">Admin Panel</h2>
+        </div>
         <div class="row mb-4">
             <div class="col-sm-6">
                 <h2 class="posts-entry-title">Politics</h2>
@@ -24,8 +23,8 @@
                 <a href="category.html" class="read-more">View All</a>
             </div>
         </div>
-        
-        @foreach(var item in Model)
+
+        @foreach (var item in Model)
         {
             <div class="col-lg-4 mb-4">
                 <div class="post-entry-alt">
@@ -43,11 +42,18 @@
                         </div>
                         <p>@item.Content</p>
                         <p><a href="#" class="read-more">Continue Reading</a></p>
+                        @* <p><a href="@Url.Action("ApprovePost", "Home")" class="read-more text-danger">Approve</a></p> *@
+
+                        <form asp-action="ApprovePost" method="POST" style="display:inline">
+                            <input type="hidden" name="Id" value="@item.Id" />
+                            <button type="submit" class="read-more text-danger">Approve</button>
+                        </form>
+
                     </div>
                 </div>
             </div>
         }
 
-        </div>
+    </div>
     </div>
 </section>

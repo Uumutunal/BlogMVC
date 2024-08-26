@@ -33,6 +33,13 @@
                             </div>
 
                             <div>
+                                @if (ViewBag.Login == false)
+                                {
+                                    <p>Wrong username or password</p>
+                                }
+                            </div>
+
+                            <div>
                                 <a class="btn btn-link" href="@Url.Action("Register", "Account")">Create an account</a>
                             </div>
 
@@ -50,6 +57,11 @@
                                 </div>
                             }
                         </form>
+
+
+
+                        
+
                     </div>
                 </div>
             </div>

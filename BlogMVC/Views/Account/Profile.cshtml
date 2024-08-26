@@ -1,0 +1,46 @@
+﻿@model UserViewModel
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "~/Views/Template/Index.cshtml";
+
+}
+<br />
+<br />
+<br />
+
+<div class="container">
+    <h2>User Profile</h2>
+
+    <form asp-action="Profile" method="post">
+        <div class="mb-3">
+            <label for="Username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="Username" name="Username" value="@Model.Username" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="Email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="CurrentPassword" class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="CurrentPassword" name="CurrentPassword" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="NewPassword" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="NewPassword" name="NewPassword">
+        </div>
+
+        <div class="mb-3">
+            <label for="ConfirmPassword" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+    </form>
+</div>
+
+<br />
+<br />
+<br />
