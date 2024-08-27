@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Twitter;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using BlogMVC.Controllers;
+using System.Security.Claims;
 
 namespace BlogMVC
 {
@@ -25,12 +27,24 @@ namespace BlogMVC
                 options.ConsumerKey = "JtI4AoLrHOnst8taYDLnptI0V";     // Replace with your Client ID
                 options.ConsumerSecret = "tXfq3wH5VqiQ8HG09qk6I66kDAZNiAvrEK33c2757daxljGeLV"; // Replace with your Client Secret
                 options.CallbackPath = "/signin-twitter"; // Ensure this matches the Callback URL registered with Twitter
+                options.RetrieveUserDetails = true;
+                options.Events.OnCreatingTicket = context =>
+                {
+                    // This is where you can access the user information from Twitter
+                    var identity = context.Principal.Identity as ClaimsIdentity;
+                    if (identity != null)
+                    {
+                        // Access additional claims or user information here
+                    }
+                    return Task.CompletedTask;
+                };
             });
 
             services.AddControllersWithViews();
+            services.AddHttpClient();
 
-			// Add session services
-			services.AddDistributedMemoryCache();
+            // Add session services
+            services.AddDistributedMemoryCache();
 			services.AddSession(options =>
 			{
 				options.IdleTimeout = TimeSpan.FromMinutes(30);

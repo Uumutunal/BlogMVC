@@ -13,10 +13,13 @@
 
     <form asp-action="Profile" method="post">
         <div class="mb-3">
-            <label for="Username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="Username" name="Username" value="@Model.Username" required>
+            <label for="Firstname" class="form-label">Firstname</label>
+            <input type="text" class="form-control" id="Firstname" name="Firstname" value="@Model.Firstname" required>
         </div>
-
+        <div class="mb-3">
+            <label for="Lastname" class="form-label">Lastname</label>
+            <input type="text" class="form-control" id="Lastname" name="Lastname" value="@Model.Lastname" required>
+        </div>
         <div class="mb-3">
             <label for="Email" class="form-label">Email</label>
             <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required>
@@ -24,7 +27,7 @@
 
         <div class="mb-3">
             <label for="CurrentPassword" class="form-label">Current Password</label>
-            <input type="password" class="form-control" id="CurrentPassword" name="CurrentPassword" required>
+            <input type="password" class="form-control" id="Password" name="Password" value="@Model.Password" required>
         </div>
 
         <div class="mb-3">
@@ -34,7 +37,7 @@
 
         <div class="mb-3">
             <label for="ConfirmPassword" class="form-label">Confirm New Password</label>
-            <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword">
+            <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword" value="@Model.ConfirmPassword">
         </div>
 
         <button type="submit" class="btn btn-primary">Update Profile</button>

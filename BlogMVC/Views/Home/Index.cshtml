@@ -8,8 +8,7 @@
 
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    @* <h1 class="display-4">Welcome</h1> *@
 </div>
 
 
@@ -24,30 +23,29 @@
                 <a href="category.html" class="read-more">View All</a>
             </div>
         </div>
-        
-        @foreach(var item in Model)
-        {
-            <div class="col-lg-4 mb-4">
-                <div class="post-entry-alt">
-                    <a href="single.html" class="img-link">
-                        <img src="@Url.Content("~/images/img_7_horizontal.jpg")" alt="Image" class="img-fluid">
-                    </a>
-                    <div class="excerpt">
-                        <h2><a href="single.html">@item.Title</a></h2>
-                        <div class="post-meta align-items-center text-left clearfix">
-                            <figure class="author-figure mb-0 me-3 float-start">
-                                <img src="@Url.Content("~/images/person_1.jpg")" alt="Image" class="img-fluid">
-                            </figure>
-                            <span class="d-inline-block mt-1">By <a href="#">David Anderson</a></span>
-                            <span>&nbsp;-&nbsp; July 19, 2019</span>
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-lg-4 mb-4">
+                    <div class="post-entry-alt">
+                        <a href="single.html" class="img-link">
+                            <img src="@Url.Content("~/images/img_7_horizontal.jpg")" alt="Image" class="img-fluid">
+                        </a>
+                        <div class="excerpt">
+                            <h2><a href="single.html">@item.Title</a></h2>
+                            <div class="post-meta align-items-center text-left clearfix">
+                                <figure class="author-figure mb-0 me-3 float-start">
+                                    <img src="@Url.Content("~/images/person_1.jpg")" alt="Image" class="img-fluid">
+                                </figure>
+                                <span class="d-inline-block mt-1">By <a href="#">David Anderson</a></span>
+                                <span>&nbsp;-&nbsp; July 19, 2019</span>
+                            </div>
+                            <p>@item.Content</p>
+                            <p><a href="#" class="read-more">Continue Reading</a></p>
                         </div>
-                        <p>@item.Content</p>
-                        <p><a href="#" class="read-more">Continue Reading</a></p>
                     </div>
                 </div>
-            </div>
-        }
-
+            }
         </div>
     </div>
 </section>

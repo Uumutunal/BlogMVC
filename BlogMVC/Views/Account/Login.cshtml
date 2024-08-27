@@ -24,8 +24,8 @@
                     <div class="card-body">
                         <form asp-action="Login" method="post">
                             <div class="form-group mb-3">
-                                <label for="Username">Username</label>
-                                <input type="text" id="Username" name="Username" class="form-control" required />
+                                <label for="Username">Email</label>
+                                <input type="text" id="Email" name="Email" class="form-control" required />
                             </div>
                             <div class="form-group mb-3">
                                 <label for="Password">Password</label>
@@ -33,7 +33,7 @@
                             </div>
 
                             <div>
-                                @if (ViewBag.Login == false)
+                                @if (ViewBag.Login == "false")
                                 {
                                     <p>Wrong username or password</p>
                                 }

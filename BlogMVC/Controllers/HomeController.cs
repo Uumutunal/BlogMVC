@@ -1,19 +1,24 @@
 using BlogMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Net.Http;
 
 namespace BlogMVC.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly HttpClient _httpClient;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, HttpClient httpClient)
         {
             _logger = logger;
+            _httpClient = httpClient;
+
         }
 
-        public IActionResult Index()
+
+        public async Task<IActionResult> Index()
         {
 
 			if (HttpContext.Session.GetString("IsLogged") != null)
@@ -24,15 +29,13 @@ namespace BlogMVC.Controllers
             else
             {
                 ViewBag.Logged = "false";
+            }
 
-			}
 
+            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
 
-			List<PostViewModel> posts = new List<PostViewModel>();
-
-			posts.Add(new PostViewModel() { Content = "Content", Title = "Title" });
-
-			return View(posts);
+            return View(allPosts);
         }
 
 

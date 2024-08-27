@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Twitter;
 using System.Threading.Tasks;
 using BlogMVC.Models;
 using System.Net.Http;
+using System.Security.Claims;
 
 namespace BlogMVC.Controllers
 {
@@ -24,17 +25,44 @@ namespace BlogMVC.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(string username, string password)
+        public async Task<IActionResult> Login(string email, string password)
         {
-            if(username == "admin" && password == "123")
-            {
-                ViewBag.Login = "true";
-                HttpContext.Session.SetString("IsLogged", "true");
-                ViewBag.IsAdmin = "true";
-                HttpContext.Session.SetString("IsAdmin", "true");
 
-                return RedirectToAction("Index", "Home");
+            var user = new UserViewModel()
+            {
+                Email = email,
+                Password = password,
+                Username = ""
+            };
+
+            var login = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Login", user);
+
+
+            if (login.IsSuccessStatusCode)
+            {
+                var loginResponse = await login.Content.ReadFromJsonAsync<LoginResponse>();
+
+                if (loginResponse != null)
+                {
+                    // Store token and user ID in session or cookies
+                    HttpContext.Session.SetString("IsLogged", "true");
+                    HttpContext.Session.SetString("UserId", loginResponse.UserId);
+                    // Optionally store token
+                    //HttpContext.Session.SetString("Token", loginResponse.Token);
+
+                    return RedirectToAction("Index", "Home");
+                }
             }
+
+            //if (username == "admin" && password == "123")
+            //{
+            //    ViewBag.Login = "true";
+            //    HttpContext.Session.SetString("IsLogged", "true");
+            //    ViewBag.IsAdmin = "true";
+            //    HttpContext.Session.SetString("IsAdmin", "true");
+
+            //    return RedirectToAction("Index", "Home");
+            //}
             ViewBag.Login = "false";
 
             return View();
@@ -43,38 +71,87 @@ namespace BlogMVC.Controllers
         public async Task<IActionResult> Register()
         {
 
-            //var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:5042/api/Account/users");
 
             return View();
 		}
+
         [HttpPost]
-        public IActionResult Register(string username, string email, string password, string confirmPassword)
+        public async Task<IActionResult> Register(string username, string email, string password, string confirmPassword)
         {
+            var user = new UserViewModel()
+            {
+                Username = username,
+                Email = email,
+                Password = password,
+                ConfirmPassword = confirmPassword
+            };
+
+            var register = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Register", user);
+
+            if (register.IsSuccessStatusCode)
+            {
+                ViewBag.Login = "true";
+                HttpContext.Session.SetString("IsLogged", "true");
+                return RedirectToAction("Index", "Home");
+
+            }
+
             return View();
         }
 
-		public IActionResult Profile()
+		public async Task<IActionResult> Profile()
 		{
-            var user = new UserViewModel() { Email = "a@gmail.com", Username = "admin", Password = "123" };
-            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
-            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
-            return View(user);
+            ViewBag.Login = "true";
+            HttpContext.Session.SetString("IsLogged", "true");
+
+            var loggedUserId = HttpContext.Session.GetString("UserId");
+            var loggedUser = await _httpClient.GetAsync($"https://localhost:7230/api/Account/user?id={loggedUserId}");
+
+
+            if (loggedUser.IsSuccessStatusCode)
+            {
+                var userLogged = await loggedUser.Content.ReadFromJsonAsync<UserViewModel>();
+                ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+                ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+                return View(userLogged);
+            }
+
+            return View();
 		}
 
         [HttpPost]
-        public IActionResult Profile(string username, string email, string password)
+        public async Task<IActionResult> Profile(UserViewModel user)
         {
-            var user = new UserViewModel() { Email = email, Username = username, Password = password };
-            return View(user);
+            ViewBag.Login = "true";
+            HttpContext.Session.SetString("IsLogged", "true");
+
+            var userUpdate = new UserViewModel() { Email = user.Email, Username = user.Username, Password = user.Password, Firstname = user.Firstname, Lastname = user.Lastname };
+
+            //user.ConfirmPassword = "";
+            if(user.ConfirmPassword == null)
+            {
+                user.ConfirmPassword = "";
+            }
+            user.Id = HttpContext.Session.GetString("UserId");
+
+            var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Account/Update", user);
+
+
+
+            return View(userUpdate);
         }
 
 		public IActionResult Logout()
 		{
             ViewBag.Logout = "false";
-			HttpContext.Session.SetString("IsLogged", "false");
-			HttpContext.Session.SetString("IsAdmin", "false");
+			//HttpContext.Session.SetString("IsLogged", "false");
+			//HttpContext.Session.SetString("IsAdmin", "false");
+			//HttpContext.Session.SetString("UserId", "");
 
-			return RedirectToAction("Index", "Home");
+            HttpContext.Session.Clear();
+
+
+            return RedirectToAction("Index", "Home");
 		}
 
 		public IActionResult Index()
@@ -100,6 +177,10 @@ namespace BlogMVC.Controllers
                 // Handle login failure
                 return RedirectToAction("Login");
             }
+
+            var claims = loginInfo.Principal.Claims;
+            var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var username = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
             // Handle login success, e.g., sign in the user or create a new account
             return RedirectToLocal(returnUrl);
