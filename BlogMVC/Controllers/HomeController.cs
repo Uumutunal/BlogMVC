@@ -2,9 +2,11 @@ using BlogMVC.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Security.Claims;
 
 namespace BlogMVC.Controllers
@@ -134,12 +136,14 @@ namespace BlogMVC.Controllers
 
             return View();
         }
-        //[HttpPost]
-        //public async Task<IActionResult> AssignRole()
-        //{
+        [HttpPost]
+        public async Task<IActionResult> AssignRole(string comboBox1, string comboBox2)
+        {
+            var updateRoleRequest = new UpdateRoleRequest { UserId = comboBox1, RoleName = comboBox2 };
+            var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Admin/UpdateRole", updateRoleRequest);
 
-        //    return RedirectToAction("AssignRole");
-        //}
+            return RedirectToAction("AssignRole");
+        }
 
         public IActionResult Privacy()
         {
