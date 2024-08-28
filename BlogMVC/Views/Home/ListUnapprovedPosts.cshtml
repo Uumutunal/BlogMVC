@@ -10,6 +10,44 @@
 }
 
 
+
+
+<!--Header-->
+<nav class="site-nav">
+    <div class="container">
+        <div class="menu-bg-wrap">
+            <div class="site-navigation">
+                <div class="row g-0 align-items-center">
+
+                    <div class="col-8 text-center">
+
+                        <ul class="js-clone-nav d-none d-lg-inline-block text-start site-menu mx-auto">
+
+                            @if (ViewBag.Logged == "false" || ViewBag.Logged == null)
+                            {
+                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Posts</a></li>
+                                <li><a href="@Url.Action("Register", "Account")">Unapproved Comments</a></li>
+                            }
+                            @if (ViewBag.Logged == "true")
+                            {
+                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Posts</a></li>
+                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Comments</a></li>
+                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Categories</a></li>
+                                <li><a href="@Url.Action("ListRoles", "Home")">Roles</a></li>
+                                <li><a href="@Url.Action("AssignRole", "Home")">Assign Role</a></li>
+
+                            }
+
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
 <section class="section">
     <div class="container">
         <div class="col-sm-6">
@@ -23,36 +61,39 @@
                 <a href="category.html" class="read-more">View All</a>
             </div>
         </div>
+        <div class="row">
 
-        @foreach (var item in Model)
-        {
-            <div class="col-lg-4 mb-4">
-                <div class="post-entry-alt">
-                    <a href="single.html" class="img-link">
-                        <img src="@Url.Content("~/images/img_7_horizontal.jpg")" alt="Image" class="img-fluid">
-                    </a>
-                    <div class="excerpt">
-                        <h2><a href="single.html">@item.Title</a></h2>
-                        <div class="post-meta align-items-center text-left clearfix">
-                            <figure class="author-figure mb-0 me-3 float-start">
-                                <img src="@Url.Content("~/images/person_1.jpg")" alt="Image" class="img-fluid">
-                            </figure>
-                            <span class="d-inline-block mt-1">By <a href="#">David Anderson</a></span>
-                            <span>&nbsp;-&nbsp; July 19, 2019</span>
+            @foreach (var item in Model)
+            {
+                <div class="col-lg-4 mb-4">
+                    <div class="post-entry-alt">
+                        <a href="single.html" class="img-link">
+                            <img src="@Url.Content("~/images/img_7_horizontal.jpg")" alt="Image" class="img-fluid">
+                        </a>
+                        <div class="excerpt">
+                            <h2><a href="single.html">@item.Title</a></h2>
+                            <div class="post-meta align-items-center text-left clearfix">
+                                <figure class="author-figure mb-0 me-3 float-start">
+                                    <img src="@Url.Content("~/images/person_1.jpg")" alt="Image" class="img-fluid">
+                                </figure>
+                                <span class="d-inline-block mt-1">By <a href="#">David Anderson</a></span>
+                                <span>&nbsp;-&nbsp; July 19, 2019</span>
+                            </div>
+                            <p>@item.Content</p>
+                            <p><a href="#" class="read-more">Continue Reading</a></p>
+                            @* <p><a href="@Url.Action("ApprovePost", "Home")" class="read-more text-danger">Approve</a></p> *@
+
+                            <form asp-action="ApprovePost" method="POST" style="display:inline">
+@*                                 <input type="hidden" id="Id" name="Id" value="@item.Id" />
+                                <button type="submit" class="read-more text-danger">Approve</button> *@
+                                <a href="@Url.Action("ApprovePost", new { Id = @item.Id })" class="read-more text-danger">Approve</a>
+
+                            </form>
                         </div>
-                        <p>@item.Content</p>
-                        <p><a href="#" class="read-more">Continue Reading</a></p>
-                        @* <p><a href="@Url.Action("ApprovePost", "Home")" class="read-more text-danger">Approve</a></p> *@
-
-                        <form asp-action="ApprovePost" method="POST" style="display:inline">
-                            <input type="hidden" name="Id" value="@item.Id" />
-                            <button type="submit" class="read-more text-danger">Approve</button>
-                        </form>
-
                     </div>
                 </div>
-            </div>
-        }
+            }
+        </div>
 
     </div>
     </div>

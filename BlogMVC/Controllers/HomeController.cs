@@ -1,4 +1,5 @@
 using BlogMVC.Models;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -70,7 +71,7 @@ namespace BlogMVC.Controllers
         }
 
         [Authorize(Policy = "AdminOnly")]
-        public IActionResult ListUnapprovedPosts()
+        public async Task<IActionResult> ListUnapprovedPosts()
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
@@ -79,14 +80,66 @@ namespace BlogMVC.Controllers
 
             posts.Add(new PostViewModel() { Content = "Content", Title = "Title" });
 
-            return View(posts);
+            var allUnApprovedPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllUnApprovedPost");
+
+            return View(allUnApprovedPosts);
         }
 
 
-        public IActionResult ApprovePost(Guid Id)
+        public async Task<IActionResult> ApprovePost(Guid Id)
         {
+            await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/ApprovePost", Id);
+
             return RedirectToAction("ListUnapprovedPosts");
         }
+
+
+        public async Task<IActionResult> ListRoles()
+        {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://localhost:7230/api/Account/GetAllRoles");
+
+            return View(roles);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddRole(string role)
+        {
+            var roles = new List<string>() { role };
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Admin/Add-Role", roles);
+
+            return RedirectToAction("ListRoles");
+        }
+
+
+        public async Task<IActionResult> AssignRole()
+        {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://localhost:7230/api/Account/GetAllRoles");
+            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
+
+
+
+            var userList = new List<string>() {};
+
+            foreach(var user in users)
+            {
+                userList.Add(user.Email);
+            }
+
+            ViewBag.ComboBox2Items = roles;
+            ViewBag.ComboBox1Items = userList;
+
+            return View();
+        }
+        //[HttpPost]
+        //public async Task<IActionResult> AssignRole()
+        //{
+
+        //    return RedirectToAction("AssignRole");
+        //}
 
         public IActionResult Privacy()
         {

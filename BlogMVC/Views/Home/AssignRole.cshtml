@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "AssignRole";
+    Layout = "~/Views/Template/Index.cshtml";
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="~/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Select Options</h2>
+        <form asp-action="ProcessSelection" method="post">
+            <div class="form-group">
+                <label for="comboBox1">Users:</label>
+                <select id="comboBox1" name="comboBox1" class="form-control">
+                    @foreach (var item in ViewBag.ComboBox1Items)
+                    {
+                        <option value="@item">@item</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="comboBox2">Combobox 2:</label>
+                <select id="comboBox2" name="comboBox2" class="form-control">
+                    @foreach (var item in ViewBag.ComboBox2Items)
+                    {
+                        <option value="@item">@item</option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+    </div>
+
+    <script src="~/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

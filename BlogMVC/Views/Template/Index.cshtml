@@ -93,7 +93,19 @@
                                     <li><a href="@Url.Action("Profile", "Account")">Profile</a></li>
                                     @if (ViewBag.IsAdmin == "true")
                                     {
-                                        <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Admin Panel</a></li>
+                                        <li class="has-children">
+                                            <a href="@Url.Action("ListUnapprovedPosts", "Home")">Admin Panel</a>
+                                            <ul class="dropdown">
+                                                <li><a href="search-result.html">Search Result</a></li>
+                                                <li><a href="@Url.Action("CreateCategory", "Home")">Blog</a></li>
+                                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Posts</a></li>
+                                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Comments</a></li>
+                                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Categories</a></li>
+                                                <li><a href="@Url.Action("ListRoles", "Home")">Roles</a></li>
+                                                <li><a href="@Url.Action("AssignRole", "Home")">Assign Role</a></li>
+
+                                            </ul>
+                                        </li>
 
                                     }
                                     <li><a href="@Url.Action("Logout", "Account")">Logout</a></li>
