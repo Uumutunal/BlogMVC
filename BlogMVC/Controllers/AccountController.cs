@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 using BlogMVC.Models;
 using System.Net.Http;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
+using System.Reflection;
+using System.IdentityModel.Tokens.Jwt;
+using System.Collections.Generic;
+
 
 namespace BlogMVC.Controllers
 {
@@ -38,6 +45,7 @@ namespace BlogMVC.Controllers
             var login = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Login", user);
 
 
+
             if (login.IsSuccessStatusCode)
             {
                 var loginResponse = await login.Content.ReadFromJsonAsync<LoginResponse>();
@@ -47,22 +55,51 @@ namespace BlogMVC.Controllers
                     // Store token and user ID in session or cookies
                     HttpContext.Session.SetString("IsLogged", "true");
                     HttpContext.Session.SetString("UserId", loginResponse.UserId);
-                    // Optionally store token
-                    //HttpContext.Session.SetString("Token", loginResponse.Token);
+                    HttpContext.Session.SetString("Token", loginResponse.Token);
+
+                    var handler = new JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(loginResponse.Token);
+
+                    // Extract roles from the claims
+                    var roles = jwtToken.Claims
+                        .Where(c => c.Type == ClaimTypes.Role)
+                        .Select(c => c.Value)
+                        .ToList();
+
+
+                    var claims = new List<Claim>
+                    {
+                        //new Claim(ClaimTypes.Role, "Admin")
+                    };
+
+                    if (roles.Any())
+                    {
+                        foreach (var role in roles)
+                        {
+                            claims.Add(new Claim(ClaimTypes.Role, role));
+                        }
+                    }
+                    else
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, "NoRole"));
+                    }
+                    claims.Add(new Claim(ClaimTypes.Name, email));
+
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity),
+                        new AuthenticationProperties
+                        {
+                            IsPersistent = true
+                        });
 
                     return RedirectToAction("Index", "Home");
                 }
             }
 
-            //if (username == "admin" && password == "123")
-            //{
-            //    ViewBag.Login = "true";
-            //    HttpContext.Session.SetString("IsLogged", "true");
-            //    ViewBag.IsAdmin = "true";
-            //    HttpContext.Session.SetString("IsAdmin", "true");
-
-            //    return RedirectToAction("Index", "Home");
-            //}
             ViewBag.Login = "false";
 
             return View();
@@ -73,7 +110,7 @@ namespace BlogMVC.Controllers
 
 
             return View();
-		}
+        }
 
         [HttpPost]
         public async Task<IActionResult> Register(string username, string email, string password, string confirmPassword)
@@ -99,14 +136,19 @@ namespace BlogMVC.Controllers
             return View();
         }
 
-		public async Task<IActionResult> Profile()
-		{
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Profile()
+        {
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
 
+            var token = HttpContext.Session.GetString("Token");
             var loggedUserId = HttpContext.Session.GetString("UserId");
+
+
             var loggedUser = await _httpClient.GetAsync($"https://localhost:7230/api/Account/user?id={loggedUserId}");
 
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             if (loggedUser.IsSuccessStatusCode)
             {
@@ -117,7 +159,7 @@ namespace BlogMVC.Controllers
             }
 
             return View();
-		}
+        }
 
         [HttpPost]
         public async Task<IActionResult> Profile(UserViewModel user)
@@ -128,7 +170,7 @@ namespace BlogMVC.Controllers
             var userUpdate = new UserViewModel() { Email = user.Email, Username = user.Username, Password = user.Password, Firstname = user.Firstname, Lastname = user.Lastname };
 
             //user.ConfirmPassword = "";
-            if(user.ConfirmPassword == null)
+            if (user.ConfirmPassword == null)
             {
                 user.ConfirmPassword = "";
             }
@@ -141,20 +183,20 @@ namespace BlogMVC.Controllers
             return View(userUpdate);
         }
 
-		public IActionResult Logout()
-		{
+        public IActionResult Logout()
+        {
             ViewBag.Logout = "false";
-			//HttpContext.Session.SetString("IsLogged", "false");
-			//HttpContext.Session.SetString("IsAdmin", "false");
-			//HttpContext.Session.SetString("UserId", "");
+            //HttpContext.Session.SetString("IsLogged", "false");
+            //HttpContext.Session.SetString("IsAdmin", "false");
+            //HttpContext.Session.SetString("UserId", "");
 
             HttpContext.Session.Clear();
 
 
             return RedirectToAction("Index", "Home");
-		}
+        }
 
-		public IActionResult Index()
+        public IActionResult Index()
         {
             return View();
         }
@@ -193,8 +235,8 @@ namespace BlogMVC.Controllers
                 return Redirect(returnUrl);
             }
 
-			HttpContext.Session.SetString("IsLogged", "true");
-			return RedirectToAction("Index", "Home");
+            HttpContext.Session.SetString("IsLogged", "true");
+            return RedirectToAction("Index", "Home");
         }
     }
 }

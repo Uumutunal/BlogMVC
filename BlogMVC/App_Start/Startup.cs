@@ -6,17 +6,29 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlogMVC.Controllers;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace BlogMVC
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+        public Startup(IConfiguration configuration)
+        {
+
+            _configuration = configuration;
+
+        }
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddCookie(options =>
             {
@@ -40,18 +52,31 @@ namespace BlogMVC
                 };
             });
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy =>
+                {
+                    policy.RequireRole("Admin");
+                });
+
+                options.AddPolicy("CanEdit", policy =>
+                {
+                    policy.RequireClaim("EditPermission");
+                });
+            });
+
             services.AddControllersWithViews();
             services.AddHttpClient();
-
+            services.AddRazorPages();
             // Add session services
             services.AddDistributedMemoryCache();
-			services.AddSession(options =>
-			{
-				options.IdleTimeout = TimeSpan.FromMinutes(30);
-				options.Cookie.HttpOnly = true;
-				options.Cookie.IsEssential = true;
-			});
-		}
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+        }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -69,8 +94,8 @@ namespace BlogMVC
             app.UseStaticFiles();
 
             app.UseRouting();
-			app.UseSession();
-			app.UseAuthentication(); // Ensure this is called to set up authentication middleware
+            app.UseSession();
+            app.UseAuthentication(); // Ensure this is called to set up authentication middleware
             app.UseAuthorization(); // Ensure this is called to set up authorization middleware
 
             app.UseEndpoints(endpoints =>
