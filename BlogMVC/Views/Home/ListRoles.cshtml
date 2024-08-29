@@ -11,36 +11,66 @@
     <div class="container">
         <div class="row mb-4">
             <div class="col-sm-6">
-                <h2 class="posts-entry-title">Politics</h2>
-            </div>
-            <div class="col-sm-6 text-sm-end">
-                <a href="category.html" class="read-more">View All</a>
+                <h2 class="posts-entry-title">Roles Management</h2>
             </div>
         </div>
-        <form asp-action="AddRole" method="post">
-            <div class="form-group mb-3">
-                <label for="Username">Role Name</label>
-                <input type="text" id="role" name="role" class="form-control" required />
+
+        <!-- Form to Add Role -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Add New Role</h5>
             </div>
-
-            <div class="form-group mb-3">
-                <button  type="submit" class="btn btn-primary">Add Role</button>
-            </div>
-
-            @* <a href="@Url.Action("ApprovePost", new { Id = @item.Id })" class="read-more text-danger">Approve</a> *@
-
-        </form>
-            @foreach (var item in Model)
-            {
-                <div class="col-lg-4 mb-4">
-                    <div class="post-entry-alt">
-
-                        <div class="excerpt">
-                            <h2><a>@item</a></h2>
-                            
-                        </div>
+            <div class="card-body">
+                <form asp-action="AddRole" method="post">
+                    <div class="form-group mb-3">
+                        <label for="role" class="form-label">Role Name</label>
+                        <input type="text" id="role" name="role" class="form-control" required />
                     </div>
-                </div>
-            }
+                    <button type="submit" class="btn btn-primary">Add Role</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Form to Delete Role -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Delete Role</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="DeleteRole" method="post">
+                    <div class="form-group mb-3">
+                        <label for="RoleSelect" class="form-label">Select Role to Delete</label>
+                        <select id="RoleSelect" name="selectedRole" class="form-select" required>
+                            <option value="">--Select Role--</option>
+                            @foreach (var item in Model)
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Delete Selected Role</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Role Listing -->
+        <div class="mt-4">
+            <h4 class="mb-3">Role List</h4>
+            <div class="list-group">
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <a href="#" class="list-group-item list-group-item-action">
+                            @item
+                        </a>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">No roles available.</p>
+                }
+            </div>
+        </div>
     </div>
 </section>

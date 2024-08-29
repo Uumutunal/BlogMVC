@@ -1,6 +1,7 @@
 using BlogMVC.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Diagnostics;
@@ -54,12 +55,19 @@ namespace BlogMVC.Controllers
                 if (roles.Contains("Admin"))
                 {
                     HttpContext.Session.SetString("IsAdmin", "true");
+                    HttpContext.Session.SetString("Role", "Admin");
                     ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+                }
+                else if (roles.Contains("Editor"))
+                {
+                    HttpContext.Session.SetString("Role", "Editor");
                 }
                 else
                 {
                     HttpContext.Session.SetString("IsAdmin", "false");
+                    HttpContext.Session.SetString("Role", "User");
                 }
+
             }
             else
             {
@@ -106,6 +114,20 @@ namespace BlogMVC.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> DeleteRole(string selectedRole)
+        {
+            var roles = new List<string>() { selectedRole };
+
+
+            if (!string.IsNullOrEmpty(selectedRole))
+            {
+
+                var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Admin/DeleteRole", roles);
+            }
+            return RedirectToAction("ListRoles");
+        }
+
+        [HttpPost]
         public async Task<IActionResult> AddRole(string role)
         {
             var roles = new List<string>() { role };
@@ -124,9 +146,9 @@ namespace BlogMVC.Controllers
 
 
 
-            var userList = new List<string>() {};
+            var userList = new List<string>() { };
 
-            foreach(var user in users)
+            foreach (var user in users)
             {
                 userList.Add(user.Email);
             }
@@ -143,6 +165,17 @@ namespace BlogMVC.Controllers
             var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Admin/UpdateRole", updateRoleRequest);
 
             return RedirectToAction("AssignRole");
+        }
+
+        public IActionResult Post()
+        {
+            ViewBag.Comments = new List<string>() { "comment" };
+            ViewBag.Categories = new List<string>() { "category" };
+            ViewBag.Tags = new List<string>() { "tag" };
+
+            var post = new PostViewModel() { Content = "content", Title = "post" };
+
+            return View(post);
         }
 
         public IActionResult Privacy()

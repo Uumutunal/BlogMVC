@@ -12,6 +12,8 @@ using Newtonsoft.Json.Linq;
 using System.Reflection;
 using System.IdentityModel.Tokens.Jwt;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNet.Identity;
 
 
 namespace BlogMVC.Controllers
@@ -20,11 +22,12 @@ namespace BlogMVC.Controllers
     {
         private const string XsrfKey = "XsrfId";
         private readonly HttpClient _httpClient;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public AccountController(HttpClient httpClient)
+        public AccountController(HttpClient httpClient, IWebHostEnvironment webHostEnvironment)
         {
             _httpClient = httpClient;
-
+            _webHostEnvironment = webHostEnvironment;
         }
         public IActionResult Login()
         {
@@ -113,22 +116,52 @@ namespace BlogMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(string username, string email, string password, string confirmPassword)
+        public async Task<IActionResult> Register(string username, string email, string password, string confirmPassword, IFormFile photo, string firstname, string lastname)
         {
+            string photoPath = "";
+            if (photo != null)
+            {
+                string uniqueFileName = "";
+
+                // Define the path to save the image
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+
+                // Generate a unique file name to avoid conflicts
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
+
+                // Combine the path with the file name
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save the file to the specified path
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await photo.CopyToAsync(fileStream);
+                }
+
+                // Set the PhotoPath property to the relative path
+                photoPath = "/images/" + uniqueFileName;
+            }
+
             var user = new UserViewModel()
             {
                 Username = username,
                 Email = email,
                 Password = password,
-                ConfirmPassword = confirmPassword
+                ConfirmPassword = confirmPassword,
+                Photo = photoPath,
+                Firstname = firstname,
+                Lastname = lastname
             };
 
             var register = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Register", user);
 
             if (register.IsSuccessStatusCode)
             {
+                var registeredUser = await register.Content.ReadFromJsonAsync<UserViewModel>();
+
                 ViewBag.Login = "true";
                 HttpContext.Session.SetString("IsLogged", "true");
+                HttpContext.Session.SetString("UserId", registeredUser.Id);
                 return RedirectToAction("Index", "Home");
 
             }
@@ -194,6 +227,28 @@ namespace BlogMVC.Controllers
 
 
             return RedirectToAction("Index", "Home");
+        }
+
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+            var user = await _httpClient.GetAsync($"https://localhost:7230/api/Account/user?id={userId}");
+            var loggedUser = await user.Content.ReadFromJsonAsync<UserViewModel>();
+            
+            string imageFolderPath = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+            string fileName = Path.GetFileName(loggedUser.Photo);
+            string filePath = Path.Combine(imageFolderPath, fileName);
+
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            var result = await _httpClient.PostAsync($"https://localhost:7230/api/Account/DeleteAccount?id={userId}", null);
+
+
+            return RedirectToAction("Logout");
         }
 
         public IActionResult Index()
