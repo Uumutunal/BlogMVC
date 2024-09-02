@@ -28,15 +28,6 @@
                                 <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Posts</a></li>
                                 <li><a href="@Url.Action("Register", "Account")">Unapproved Comments</a></li>
                             }
-                            @if (ViewBag.Logged == "true")
-                            {
-                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Posts</a></li>
-                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Comments</a></li>
-                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Categories</a></li>
-                                <li><a href="@Url.Action("ListRoles", "Home")">Roles</a></li>
-                                <li><a href="@Url.Action("AssignRole", "Home")">Assign Role</a></li>
-
-                            }
 
                         </ul>
                     </div>
@@ -67,11 +58,11 @@
             {
                 <div class="col-lg-4 mb-4">
                     <div class="post-entry-alt">
-                        <a href="single.html" class="img-link">
+                        <a href="@Url.Action("Post", "Home", new { id = @item.Id })" class="img-link">
                             <img src="@Url.Content("~/images/img_7_horizontal.jpg")" alt="Image" class="img-fluid">
                         </a>
                         <div class="excerpt">
-                            <h2><a href="single.html">@item.Title</a></h2>
+                            <h2><a href="@Url.Action("Post", "Home", new { id = @item.Id })">@item.Title</a></h2>
                             <div class="post-meta align-items-center text-left clearfix">
                                 <figure class="author-figure mb-0 me-3 float-start">
                                     <img src="@Url.Content("~/images/person_1.jpg")" alt="Image" class="img-fluid">

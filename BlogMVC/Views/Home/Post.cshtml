@@ -13,8 +13,8 @@
                     <h1 class="mb-4">@Model.Title</h1>
                     <div class="post-meta align-items-center text-center">
                         <figure class="author-figure mb-0 me-3 d-inline-block"><img src="images/person_1.jpg" alt="Image" class="img-fluid"></figure>
-                        <span class="d-inline-block mt-1">By Carl Atkinson</span>
-                        <span>&nbsp;-&nbsp; February 10, 2019</span>
+                        <span class="d-inline-block mt-1">By @ViewBag.Author</span>
+                        <span>&nbsp;-&nbsp; @ViewBag.Date</span>
                     </div>
                 </div>
             </div>
@@ -25,8 +25,13 @@
 
 
 
+
 <section class="section">
     <div class="container">
+        @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
+        {
+            <p><a href="@Url.Action("AddPost", "Home", new { Id = Model.Id })" class="btn btn-danger btn-sm rounded px-2 py-2">Edit</a></p>
+        }
 
         <div class="row blog-entries element-animate">
 
@@ -173,9 +178,9 @@
                 <!-- END sidebar-box -->
                 <div class="sidebar-box">
                     <div class="bio text-center">
-                        <img src="images/person_2.jpg" alt="Image Placeholder" class="img-fluid mb-3">
+                        <img src="@Url.Content(ViewBag.AuthorPicture)" alt="Image Placeholder" class="img-fluid mb-3">
                         <div class="bio-body">
-                            <h2>Hannah Anderson</h2>
+                            <h2>@ViewBag.Author</h2>
                             <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Exercitationem facilis sunt repellendus excepturi beatae porro debitis voluptate nulla quo veniam fuga sit molestias minus.</p>
                             <p><a href="#" class="btn btn-primary btn-sm rounded px-2 py-2">Read my bio</a></p>
                             <p class="social">

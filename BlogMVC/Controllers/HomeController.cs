@@ -9,6 +9,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Web.Helpers;
+using System.Xml.Linq;
 
 namespace BlogMVC.Controllers
 {
@@ -74,10 +77,17 @@ namespace BlogMVC.Controllers
                 HttpContext.Session.SetString("IsAdmin", "false");
             }
 
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
             var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
-            var allCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
 
-            return View(allPosts);
+            // Extract PostId values from postCategories
+            var postCategoryIds = new HashSet<Guid>(postCategories.Select(pc => pc.PostId));
+
+
+            // Filter allPosts based on postCategoryIds
+            var posts = allPosts.Where(post => postCategoryIds.Contains(post.Id)).ToList();
+
+            return View(posts);
         }
 
         [Authorize(Policy = "AdminOnly")]
@@ -167,16 +177,110 @@ namespace BlogMVC.Controllers
             return RedirectToAction("AssignRole");
         }
 
-        public IActionResult Post()
+        public async Task<IActionResult> Post(Guid id)
         {
-            ViewBag.Comments = new List<string>() { "comment" };
-            ViewBag.Categories = new List<string>() { "category" };
-            ViewBag.Tags = new List<string>() { "tag" };
 
-            var post = new PostViewModel() { Content = "content", Title = "post" };
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
+            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
+            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
+            var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://localhost:7230/api/Post/GetAllComments");
+            var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+
+            //var p = new List<PostCommentViewModel>();
+
+            //foreach (var item in postComments)
+            //{
+            //    var p2 = new PostCommentViewModel();
+            //    p2.User = users.FirstOrDefault(s => s.Id == item.UserId);
+            //    p2.UserId = item.UserId;
+            //    p2.Post = posts.FirstOrDefault(s => s.Id == item.PostId);
+            //    p2.PostId = item.PostId;
+            //    p2.Comment = comments.FirstOrDefault(s => s.Id == item.CommentId);
+            //    p2.CommentId = item.CommentId;
+
+            //    p.Add(p2);
+            //}
+
+            var p = new List<PostCategoryViewModel>();
+
+            foreach (var item in postCategories)
+            {
+                var p2 = new PostCategoryViewModel();
+                p2.Post = posts.FirstOrDefault(s => s.Id == item.PostId);
+                p2.PostId = item.PostId;
+                p2.User = users.FirstOrDefault(s => s.Id == item.UserId);
+                p2.UserId = item.UserId;
+                p2.Category = categories.FirstOrDefault(s => s.Id == item.CategoryId);
+                p2.CategoryId = item.CategoryId;
+
+                p.Add(p2);
+            }
+
+            var post2 = p.FirstOrDefault(x => x.PostId == id);
+
+
+            ViewBag.Comments = new List<string>() { "comment" };
+            ViewBag.Categories = new List<string>() { post2.Category.Name == null ? "": post2.Category.Name };
+            ViewBag.Tags = new List<string>() { "tag" };
+            ViewBag.Author = post2.User.Firstname + " " + post2.User.Lastname;
+            ViewBag.AuthorPicture = post2.User.Photo;
+            ViewBag.Date = post2.Post.CreatedDate;
+            ViewBag.Role = HttpContext.Session.GetString("Role");
+
+            var post = p.FirstOrDefault(x => x.PostId == id).Post;
 
             return View(post);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> AddPost(Guid Id)
+        {
+            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
+            var post = posts.FirstOrDefault(x => x.Id == Id);
+
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+
+            ViewBag.Categories = allCategories;
+
+            return View(post);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPost(PostViewModel post, List<Guid> categories = null)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+
+            ViewBag.Categories = allCategories;
+
+            var postRequest = new AddPostRequest();
+            postRequest.Post = post;
+            postRequest.UserId = userId;
+            postRequest.CategoryIds = categories;
+
+            if(post.Id == Guid.Empty)
+            {
+                var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/AddPost", postRequest);
+            }
+            else
+            {
+                var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/UpdatePost", postRequest);
+            }
+
+
+
+            return RedirectToAction("Index");
+        }
+
+
+        //[HttpGet]
+        //public async Task<IActionResult> AddPost(Guid Id)
+        //{
+        //    var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
+        //    var post = posts.FirstOrDefault(x => x.Id == Id);
+        //    return View(post);
+        //}
 
         public IActionResult Privacy()
         {

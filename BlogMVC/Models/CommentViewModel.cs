@@ -1,9 +1,9 @@
 ﻿namespace BlogMVC.Models
 {
-    public class CategoryViewModel
+    public class CommentViewModel
     {
         public Guid Id { get; set; }
-        public string? Name { get; set; }
+        public string Content { get; set; }
 
     }
 }

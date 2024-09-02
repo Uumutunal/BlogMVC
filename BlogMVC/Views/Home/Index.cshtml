@@ -15,6 +15,12 @@
 
 <section class="section">
     <div class="container">
+
+        @if (ViewBag.Logged == "true")
+        {
+            <p><a href="@Url.Action("AddPost", "Home", new { Id = Guid.Empty })" class="btn btn-danger btn-sm rounded px-2 py-2">Add new post</a></p>
+        }
+
         <div class="row mb-4">
             <div class="col-sm-6">
                 <h2 class="posts-entry-title">Politics</h2>
@@ -28,11 +34,11 @@
             {
                 <div class="col-lg-4 mb-4">
                     <div class="post-entry-alt">
-                        <a href="single.html" class="img-link">
+                        <a href="@Url.Action("Post", "Home", new { id = @item.Id })" class="img-link">
                             <img src="@Url.Content("~/images/img_7_horizontal.jpg")" alt="Image" class="img-fluid">
                         </a>
                         <div class="excerpt">
-                            <h2><a href="single.html">@item.Title</a></h2>
+                            <h2><a href="@Url.Action("Post", "Home", new { id = @item.Id })">@item.Title</a></h2>
                             <div class="post-meta align-items-center text-left clearfix">
                                 <figure class="author-figure mb-0 me-3 float-start">
                                     <img src="@Url.Content("~/images/person_1.jpg")" alt="Image" class="img-fluid">
@@ -41,7 +47,7 @@
                                 <span>&nbsp;-&nbsp; July 19, 2019</span>
                             </div>
                             <p>@item.Content</p>
-                            <p><a href="#" class="read-more">Continue Reading</a></p>
+                            <p><a href="@Url.Action("Post", "Home", new { id = @item.Id })" class="read-more">Continue Reading</a></p>
                         </div>
                     </div>
                 </div>

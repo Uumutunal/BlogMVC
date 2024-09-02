@@ -8,5 +8,7 @@
         public string? Photo { get; set; } = string.Empty;
         public bool IsApproved { get; set; } = false;
         public int Likes { get; set; } = 0;
+        public DateTime? CreatedDate { get; set; }
+
     }
 }
