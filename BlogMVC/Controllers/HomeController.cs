@@ -79,15 +79,31 @@ namespace BlogMVC.Controllers
 
             var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
             var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
 
-            // Extract PostId values from postCategories
-            var postCategoryIds = new HashSet<Guid>(postCategories.Select(pc => pc.PostId));
 
 
-            // Filter allPosts based on postCategoryIds
-            var posts = allPosts.Where(post => postCategoryIds.Contains(post.Id)).ToList();
+            foreach (var item in postCategories)
+            {
+                var user = allUsers.FirstOrDefault(x => x.Id == item.UserId);
+                item.User = user;
 
-            return View(posts);
+                var category = allCategories.FirstOrDefault(x => x.Id == item.CategoryId);
+                item.Category = category;
+
+                var post = allPosts.FirstOrDefault(x => x.Id == item.PostId);
+                if (post == null)
+                {
+                    continue;
+                }
+                item.Post = post;
+
+            }
+
+            ViewBag.Categories = allCategories;
+
+            return View(postCategories);
         }
 
         [Authorize(Policy = "AdminOnly")]
@@ -96,13 +112,42 @@ namespace BlogMVC.Controllers
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
 
+
+
+            //
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
+            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllUnApprovedPost");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+
+
+
+            foreach (var item in postCategories)
+            {
+                var user = allUsers.FirstOrDefault(x => x.Id == item.UserId);
+                item.User = user;
+
+                var category = allCategories.FirstOrDefault(x => x.Id == item.CategoryId);
+                item.Category = category;
+
+                var post = allPosts.FirstOrDefault(x => x.Id == item.PostId);
+                if (post == null)
+                {
+                    continue;
+                }
+                item.Post = post;
+
+            }
+
+            ViewBag.Categories = allCategories;
+            //
+
             List<PostViewModel> posts = new List<PostViewModel>();
 
-            posts.Add(new PostViewModel() { Content = "Content", Title = "Title" });
 
             var allUnApprovedPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllUnApprovedPost");
 
-            return View(allUnApprovedPosts);
+            return View(postCategories);
         }
 
 
@@ -163,43 +208,69 @@ namespace BlogMVC.Controllers
                 userList.Add(user.Email);
             }
 
-            ViewBag.ComboBox2Items = roles;
-            ViewBag.ComboBox1Items = userList;
+            ViewBag.Roles = roles;
+            ViewBag.Users = userList;
 
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> AssignRole(string comboBox1, string comboBox2)
+        public async Task<IActionResult> AssignRole(string user, string role)
         {
-            var updateRoleRequest = new UpdateRoleRequest { UserId = comboBox1, RoleName = comboBox2 };
+            var updateRoleRequest = new UpdateRoleRequest { UserId = user, RoleName = role };
             var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Admin/UpdateRole", updateRoleRequest);
 
             return RedirectToAction("AssignRole");
         }
 
-        public async Task<IActionResult> Post(Guid id)
+        [HttpPost]
+        public async Task<IActionResult> DeleteCategory(Guid id)
         {
 
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/DeleteCategory", id);
+
+
+            return RedirectToAction("ListCategories");
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCategory(string name)
+        {
+            var category = new CategoryViewModel { Name = name };
+            if (ModelState.IsValid)
+            {
+                var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Admin/CreateCategory", category);
+                return RedirectToAction("ListCategories");
+            }
+            return RedirectToAction("ListCategories");
+        }
+
+        public async Task<IActionResult> ListCategories()
+        {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+
+            var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+
+            return View(categories);
+        }
+
+
+
+        public async Task<IActionResult> Post(Guid id)
+        {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+
+            //var postt = await _httpClient.GetFromJsonAsync<List<PostResponse>>("https://localhost:7230/api/Post/GetPost?id="+ id);
+
             var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
+            var postComments = await _httpClient.GetFromJsonAsync<List<PostCommentViewModel>>("https://localhost:7230/api/Post/GetAllPostComments");
+
             var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
             var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
             var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://localhost:7230/api/Post/GetAllComments");
             var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
-
-            //var p = new List<PostCommentViewModel>();
-
-            //foreach (var item in postComments)
-            //{
-            //    var p2 = new PostCommentViewModel();
-            //    p2.User = users.FirstOrDefault(s => s.Id == item.UserId);
-            //    p2.UserId = item.UserId;
-            //    p2.Post = posts.FirstOrDefault(s => s.Id == item.PostId);
-            //    p2.PostId = item.PostId;
-            //    p2.Comment = comments.FirstOrDefault(s => s.Id == item.CommentId);
-            //    p2.CommentId = item.CommentId;
-
-            //    p.Add(p2);
-            //}
 
             var p = new List<PostCategoryViewModel>();
 
@@ -219,8 +290,31 @@ namespace BlogMVC.Controllers
             var post2 = p.FirstOrDefault(x => x.PostId == id);
 
 
-            ViewBag.Comments = new List<string>() { "comment" };
-            ViewBag.Categories = new List<string>() { post2.Category.Name == null ? "": post2.Category.Name };
+
+            var c = new List<PostCommentViewModel>();
+
+            foreach (var item in postComments)
+            {
+                if (item.PostId == id)
+                {
+                    var p2 = new PostCommentViewModel();
+                    p2.User = users.FirstOrDefault(s => s.Id == item.UserId);
+                    p2.UserId = item.UserId;
+                    p2.Comment = comments.FirstOrDefault(s => s.Id == item.CommentId);
+                    p2.CommentId = item.CommentId;
+
+                    c.Add(p2);
+                }
+            }
+
+
+
+            if (c == null)
+            {
+                c = new List<PostCommentViewModel>();
+            }
+            ViewBag.Comments = c;
+            ViewBag.Categories = new List<string>() { post2 == null ? "" : post2.Category.Name };
             ViewBag.Tags = new List<string>() { "tag" };
             ViewBag.Author = post2.User.Firstname + " " + post2.User.Lastname;
             ViewBag.AuthorPicture = post2.User.Photo;
@@ -235,6 +329,9 @@ namespace BlogMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> AddPost(Guid Id)
         {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+
             var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
             var post = posts.FirstOrDefault(x => x.Id == Id);
 
@@ -259,7 +356,7 @@ namespace BlogMVC.Controllers
             postRequest.UserId = userId;
             postRequest.CategoryIds = categories;
 
-            if(post.Id == Guid.Empty)
+            if (post.Id == Guid.Empty)
             {
                 var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/AddPost", postRequest);
             }
@@ -273,18 +370,96 @@ namespace BlogMVC.Controllers
             return RedirectToAction("Index");
         }
 
-
-        //[HttpGet]
-        //public async Task<IActionResult> AddPost(Guid Id)
-        //{
-        //    var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
-        //    var post = posts.FirstOrDefault(x => x.Id == Id);
-        //    return View(post);
-        //}
-
-        public IActionResult Privacy()
+        [HttpPost]
+        public async Task<IActionResult> AddComment(string message, Guid postId)
         {
+
+
+            var userId = HttpContext.Session.GetString("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Post", "Home", new { id = postId });
+            }
+
+            var comment = new CommentViewModel()
+            {
+                Content = message,
+            };
+
+            var postRequest = new AddCommentRequest();
+            postRequest.Comment = comment;
+            postRequest.PostId = postId;
+            postRequest.UserId = HttpContext.Session.GetString("UserId");
+
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/AddComment", postRequest);
+
+            return RedirectToAction("Post", new { id = postId });
+
+        }
+
+        public async Task<IActionResult> DeleteComment(Guid id)
+        {
+
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/DeleteComment", id);
+
+
+            return RedirectToAction("ListUnapprovedComments");
+        }
+
+        public async Task<IActionResult> ListUnapprovedComments()
+        {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+
+            var postComments = await _httpClient.GetFromJsonAsync<List<PostCommentViewModel>>("https://localhost:7230/api/Post/GetAllPostComments");
+
+            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
+            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
+            var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://localhost:7230/api/Post/GetAllUnApprovedComments");
+
+
+
+
+            var c = new List<PostCommentViewModel>();
+
+            foreach (var item in postComments)
+            {
+                var p2 = new PostCommentViewModel();
+                p2.User = users.FirstOrDefault(s => s.Id == item.UserId);
+                p2.UserId = item.UserId;
+                p2.Comment = comments.FirstOrDefault(s => s.Id == item.CommentId);
+                p2.CommentId = item.CommentId;
+
+                if (p2.Comment != null && !p2.Comment.IsApproved)
+                {
+                    c.Add(p2);
+                }
+            }
+
+
+
+            if (c == null)
+            {
+                c = new List<PostCommentViewModel>();
+            }
+            ViewBag.Comments = c;
+            ViewBag.Tags = new List<string>() { "tag" };
+            ViewBag.Role = HttpContext.Session.GetString("Role");
+
+
             return View();
+        }
+        public async Task<IActionResult> ApproveComment(Guid id)
+        {
+
+            await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/ApproveComment", id);
+
+            return RedirectToAction("ListUnapprovedComments");
+        }
+        public async Task<IActionResult> Privacy()
+        {
+            return RedirectToAction("ListUnapprovedComments");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

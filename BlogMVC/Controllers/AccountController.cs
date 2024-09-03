@@ -195,12 +195,35 @@ namespace BlogMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Profile(UserViewModel user)
+        public async Task<IActionResult> Profile(UserViewModel user, IFormFile image)
         {
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
 
-            var userUpdate = new UserViewModel() { Email = user.Email, Username = user.Username, Password = user.Password, Firstname = user.Firstname, Lastname = user.Lastname };
+            string photoPath = "";
+            if (image != null)
+            {
+                string uniqueFileName = "";
+
+                // Define the path to save the image
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+
+                // Generate a unique file name to avoid conflicts
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(image.FileName);
+
+                // Combine the path with the file name
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save the file to the specified path
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                // Set the PhotoPath property to the relative path
+                photoPath = "/images/" + uniqueFileName;
+            }
+
 
             //user.ConfirmPassword = "";
             if (user.ConfirmPassword == null)
@@ -209,7 +232,9 @@ namespace BlogMVC.Controllers
             }
             user.Id = HttpContext.Session.GetString("UserId");
 
-            var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Account/Update", user);
+            var userUpdate = new UserViewModel() { Email = user.Email, Username = user.Username, Password = user.Password, Firstname = user.Firstname, Lastname = user.Lastname, Photo = photoPath, Id = user.Id, ConfirmPassword = user.ConfirmPassword };
+
+            var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Account/Update", userUpdate);
 
 
 

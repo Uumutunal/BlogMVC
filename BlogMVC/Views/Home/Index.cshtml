@@ -1,9 +1,9 @@
-﻿@model List<PostViewModel>
+﻿@model List<PostCategoryViewModel>
 
 @{
     ViewData["Title"] = "Home Page";
     Layout = "~/Views/Template/Index.cshtml";
-
+    var allCategories = ViewBag.Categories as List<CategoryViewModel>;
 }
 
 
@@ -21,37 +21,79 @@
             <p><a href="@Url.Action("AddPost", "Home", new { Id = Guid.Empty })" class="btn btn-danger btn-sm rounded px-2 py-2">Add new post</a></p>
         }
 
-        <div class="row mb-4">
-            <div class="col-sm-6">
-                <h2 class="posts-entry-title">Politics</h2>
-            </div>
-            <div class="col-sm-6 text-sm-end">
-                <a href="category.html" class="read-more">View All</a>
-            </div>
-        </div>
-        <div class="row">
+
+        @foreach (var category in allCategories)
+        {
+
+        int counter = 0;
+
             @foreach (var item in Model)
             {
-                <div class="col-lg-4 mb-4">
-                    <div class="post-entry-alt">
-                        <a href="@Url.Action("Post", "Home", new { id = @item.Id })" class="img-link">
-                            <img src="@Url.Content("~/images/img_7_horizontal.jpg")" alt="Image" class="img-fluid">
-                        </a>
-                        <div class="excerpt">
-                            <h2><a href="@Url.Action("Post", "Home", new { id = @item.Id })">@item.Title</a></h2>
-                            <div class="post-meta align-items-center text-left clearfix">
-                                <figure class="author-figure mb-0 me-3 float-start">
-                                    <img src="@Url.Content("~/images/person_1.jpg")" alt="Image" class="img-fluid">
-                                </figure>
-                                <span class="d-inline-block mt-1">By <a href="#">David Anderson</a></span>
-                                <span>&nbsp;-&nbsp; July 19, 2019</span>
-                            </div>
-                            <p>@item.Content</p>
-                            <p><a href="@Url.Action("Post", "Home", new { id = @item.Id })" class="read-more">Continue Reading</a></p>
+                if (item.Category.Name == category.Name)
+                {
+                    <div class="row mb-4">
+                        <div class="col-sm-6">
+                            <h2 class="posts-entry-title">@category.Name</h2>
+                        </div>
+                        <div class="col-sm-6 text-sm-end">
+                            <a href="category.html" class="read-more">View All</a>
                         </div>
                     </div>
-                </div>
+                    break;
+                }
             }
-        </div>
+            <div class="row">
+
+                @foreach (var item in Model)
+                {
+
+                    if(item.Post == null)
+                    {
+                        continue;
+                    }
+
+                    if (item.Category.Name == category.Name)
+                    {
+                        <div class="col-lg-4 mb-4">
+                            <div class="post-entry-alt">
+                                <a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="img-link">
+                                    <img src="@Url.Content(@item.Post.Photo)" alt="@Url.Content("~/images/img_7_horizontal.jpg")" class="img-fluid">
+                                </a>
+                                <div class="excerpt">
+                                    <h2><a href="@Url.Action("Post", "Home", new { id = @item.PostId })">@item.Post.Title</a></h2>
+                                    <div class="post-meta align-items-center text-left clearfix">
+                                        <figure class="author-figure mb-0 me-3 float-start">
+                                            <img src="@Url.Content(@item.User.Photo)" alt="Image" class="img-fluid">
+                                        </figure>
+                                        <span class="d-inline-block mt-1">By <a href="#">@item.User.Firstname @item.User.Lastname</a></span>
+                                        <span>&nbsp;-&nbsp; @item.Post.CreatedDate</span>
+                                    </div>
+                                    @if (item.Post.Content.Length > 200)
+                                    {
+                                        <p>@item.Post.Content.Substring(0, 200) ...</p>
+                                    }
+                                    else
+                                    {
+                                        <p>@item.Post.Content</p>
+
+                                    }
+                                    <p><a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="read-more">Continue Reading</a></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        counter++;
+
+                        if(counter == 3)
+                        {
+                            break;
+                        }
+                        
+                    }
+                }
+            </div>
+        }
+
+
     </div>
 </section>

@@ -17,9 +17,9 @@
         <h2>Select Options</h2>
         <form asp-action="AssignRole" method="post">
             <div class="form-group">
-                <label for="comboBox1">Users:</label>
-                <select id="comboBox1" name="comboBox1" class="form-control">
-                    @foreach (var item in ViewBag.ComboBox1Items)
+                <label for="user">Users:</label>
+                <select id="user" name="user" class="form-control">
+                    @foreach (var item in ViewBag.Users)
                     {
                         <option value="@item">@item</option>
                     }
@@ -27,9 +27,9 @@
             </div>
 
             <div class="form-group">
-                <label for="comboBox2">Combobox 2:</label>
-                <select id="comboBox2" name="comboBox2" class="form-control">
-                    @foreach (var item in ViewBag.ComboBox2Items)
+                <label for="role">role</label>
+                <select id="role" name="Role" class="form-control">
+                    @foreach (var item in ViewBag.Roles)
                     {
                         <option value="@item">@item</option>
                     }

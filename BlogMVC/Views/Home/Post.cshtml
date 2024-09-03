@@ -1,6 +1,7 @@
 ﻿@{
     ViewBag.Title = "Post";
     Layout = "~/Views/Template/Index.cshtml";
+    var commentList = ViewBag.Comments as List<PostCommentViewModel>;
 }
 @model PostViewModel
 
@@ -12,7 +13,7 @@
                 <div class="post-entry text-center">
                     <h1 class="mb-4">@Model.Title</h1>
                     <div class="post-meta align-items-center text-center">
-                        <figure class="author-figure mb-0 me-3 d-inline-block"><img src="images/person_1.jpg" alt="Image" class="img-fluid"></figure>
+                        <figure class="author-figure mb-0 me-3 d-inline-block"><img src="@Url.Content(ViewBag.AuthorPicture)" alt="Image" class="img-fluid"></figure>
                         <span class="d-inline-block mt-1">By @ViewBag.Author</span>
                         <span>&nbsp;-&nbsp; @ViewBag.Date</span>
                     </div>
@@ -30,7 +31,7 @@
     <div class="container">
         @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
         {
-            <p><a href="@Url.Action("AddPost", "Home", new { Id = Model.Id })" class="btn btn-danger btn-sm rounded px-2 py-2">Edit</a></p>
+            <p><a href="@Url.Action("AddPost", "Home", new { Id = Model.Id })" class="btn btn-danger btn-sm rounded px-2 py-2">Edit Post</a></p>
         }
 
         <div class="row blog-entries element-animate">
@@ -63,105 +64,46 @@
                 <div class="pt-5 comment-wrap">
                     <h3 class="mb-5 heading"> Comments</h3>
                     <ul class="comment-list">
-                        @foreach (var item in ViewBag.Comments)
+
+                        @foreach (var item in commentList)
                         {
-
-                            <li class="comment">
-                                <div class="vcard">
-                                    <img src="images/person_1.jpg" alt="Image placeholder">
-                                </div>
-                                <div class="comment-body">
-                                    <h3>Jean Doe</h3>
-                                    <div class="meta">January 9, 2018 at 2:21pm</div>
-                                    <p>@item</p>
-                                    <p><a href="#" class="reply rounded">Reply</a></p>
-                                </div>
-                            </li>
-                        }
-
-                        <li class="comment">
-                            <div class="vcard">
-                                <img src="images/person_2.jpg" alt="Image placeholder">
-                            </div>
-                            <div class="comment-body">
-                                <h3>Jean Doe</h3>
-                                <div class="meta">January 9, 2018 at 2:21pm</div>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
-                                <p><a href="#" class="reply rounded">Reply</a></p>
-                            </div>
-
-                            <ul class="children">
+                            @if (item.Comment != null)
+                            {
                                 <li class="comment">
                                     <div class="vcard">
-                                        <img src="images/person_3.jpg" alt="Image placeholder">
+                                        <img src="@Url.Content(@item.User.Photo)" alt="Image placeholder">
                                     </div>
                                     <div class="comment-body">
-                                        <h3>Jean Doe</h3>
-                                        <div class="meta">January 9, 2018 at 2:21pm</div>
-                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
+                                        <h3>@item.User.Firstname @item.User.Lastname</h3>
+                                        <div class="meta">@item.Comment.CreatedDate</div>
+                                        <p>@item.Comment.Content</p>
                                         <p><a href="#" class="reply rounded">Reply</a></p>
+                                        @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
+                                        {
+                                            <p><a href="@Url.Action("AddPost", "Home", new { Id = item.Comment.Id })" class="reply btn-sm rounded px-2 py-2">Edit Comment</a></p>
+                                            <p><a href="@Url.Action("DeleteComment", "Home", new { Id = item.Comment.Id })" class="reply btn-sm rounded px-2 py-2">Delete Comment</a></p>
+                                        }
                                     </div>
-
-
-                                    <ul class="children">
-                                        <li class="comment">
-                                            <div class="vcard">
-                                                <img src="images/person_4.jpg" alt="Image placeholder">
-                                            </div>
-                                            <div class="comment-body">
-                                                <h3>Jean Doe</h3>
-                                                <div class="meta">January 9, 2018 at 2:21pm</div>
-                                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
-                                                <p><a href="#" class="reply rounded">Reply</a></p>
-                                            </div>
-
-                                            <ul class="children">
-                                                <li class="comment">
-                                                    <div class="vcard">
-                                                        <img src="images/person_5.jpg" alt="Image placeholder">
-                                                    </div>
-                                                    <div class="comment-body">
-                                                        <h3>Jean Doe</h3>
-                                                        <div class="meta">January 9, 2018 at 2:21pm</div>
-                                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur quidem laborum necessitatibus, ipsam impedit vitae autem, eum officia, fugiat saepe enim sapiente iste iure! Quam voluptas earum impedit necessitatibus, nihil?</p>
-                                                        <p><a href="#" class="reply rounded">Reply</a></p>
-                                                    </div>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                    </ul>
                                 </li>
-                            </ul>
-                        </li>
+                            }
+                        }
 
-                    <!-- END comment-list -->
 
-                    <div class="comment-form-wrap pt-5">
-                        <h3 class="mb-5">Leave a comment</h3>
-                        <form action="#" class="p-5 bg-light">
-                            <div class="form-group">
-                                <label for="name">Name *</label>
-                                <input type="text" class="form-control" id="name">
-                            </div>
-                            <div class="form-group">
-                                <label for="email">Email *</label>
-                                <input type="email" class="form-control" id="email">
-                            </div>
-                            <div class="form-group">
-                                <label for="website">Website</label>
-                                <input type="url" class="form-control" id="website">
-                            </div>
+                        <!-- END comment-list -->
 
-                            <div class="form-group">
-                                <label for="message">Message</label>
-                                <textarea name="" id="message" cols="30" rows="10" class="form-control"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <input type="submit" value="Post Comment" class="btn btn-primary">
-                            </div>
-
-                        </form>
-                    </div>
+                        <div class="comment-form-wrap pt-5">
+                            <h3 class="mb-5">Leave a comment</h3>
+                            <form asp-action="AddComment" class="p-5 bg-light" method="post">
+                                <div class="form-group">
+                                    <label for="message">Message</label>
+                                    <textarea type="text" name="message" id="message" name="message" cols="30" rows="10" class="form-control"></textarea>
+                                </div>
+                                <input type="hidden" id="postId" name="postId" value="@Model.Id">
+                                <div class="form-group">
+                                    <input type="submit" value="Post Comment" class="btn btn-primary">
+                                </div>
+                            </form>
+                        </div>
                 </div>
 
             </div>

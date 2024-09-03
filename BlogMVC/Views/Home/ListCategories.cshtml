@@ -1,0 +1,48 @@
+﻿@{
+    ViewBag.Title = "ListCategories";
+    Layout = "~/Views/Template/Index.cshtml";
+
+}
+
+
+@model List<CategoryViewModel>
+
+<section class="section">
+    <div class="container">
+
+        <form asp-action="CreateCategory" method="post">
+            <div class="form-group mb-3">
+                <label for="Name">Category Name</label>
+                <input type="text" id="name" name="name" class="form-control" required />
+            </div>
+
+            <div class="form-group mb-3">
+                <button type="submit" class="btn btn-primary">Add Category</button>
+            </div>
+
+            @* <a href="@Url.Action("ApprovePost", new { Id = @item.Id })" class="read-more text-danger">Approve</a> *@
+
+        </form>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var category in Model)
+                {
+                    <tr>
+                        <td>@category.Name</td>
+                        <td>
+                            <form asp-action="DeleteCategory" method="post" style="display:inline">
+                                <input type="hidden" name="id" value="@category.Id" />
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
