@@ -106,6 +106,36 @@ namespace BlogMVC.Controllers
             return View(postCategories);
         }
 
+        public async Task<IActionResult> ViewCategoryDetail(Guid categoryId)
+        {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
+
+            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+
+            foreach (var item in postCategories)
+            {
+                var user = allUsers.FirstOrDefault(x => x.Id == item.UserId);
+                item.User = user;
+
+                var category = allCategories.FirstOrDefault(x => x.Id == item.CategoryId);
+                item.Category = category;
+
+                var post = allPosts.FirstOrDefault(x => x.Id == item.PostId);
+                if (post == null)
+                {
+                    continue;
+                }
+                item.Post = post;
+
+            }
+
+            return View(postCategories.Where(x => x.CategoryId == categoryId).ToList());
+        }
+
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ListUnapprovedPosts()
         {
