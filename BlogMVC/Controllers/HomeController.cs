@@ -1,7 +1,9 @@
 using BlogMVC.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Diagnostics;
@@ -19,12 +21,13 @@ namespace BlogMVC.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly HttpClient _httpClient;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public HomeController(ILogger<HomeController> logger, HttpClient httpClient)
+        public HomeController(ILogger<HomeController> logger, HttpClient httpClient, IWebHostEnvironment webHostEnvironment)
         {
             _logger = logger;
             _httpClient = httpClient;
-
+            _webHostEnvironment = webHostEnvironment;
         }
 
 
@@ -150,15 +153,21 @@ namespace BlogMVC.Controllers
             return View(postCategories);
         }
 
-
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ApprovePost(Guid Id)
         {
             await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/ApprovePost", Id);
 
             return RedirectToAction("ListUnapprovedPosts");
         }
+        public async Task<IActionResult> DeletePost(Guid Id)
+        {
+            await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/DeletePost", Id);
 
+            return RedirectToAction("ListUnapprovedPosts");
+        }
 
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ListRoles()
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
@@ -168,6 +177,7 @@ namespace BlogMVC.Controllers
             return View(roles);
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> DeleteRole(string selectedRole)
         {
@@ -182,6 +192,7 @@ namespace BlogMVC.Controllers
             return RedirectToAction("ListRoles");
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> AddRole(string role)
         {
@@ -191,7 +202,27 @@ namespace BlogMVC.Controllers
             return RedirectToAction("ListRoles");
         }
 
+        [Authorize(Policy = "AdminOnly")]
+        [HttpPost]
+        public async Task<IActionResult> RemoveRole(string userId, string roleId)
+        {
 
+
+            // Redirect or return a success message
+            return RedirectToAction("AssignRole");
+        }
+
+        [Authorize(Policy = "AdminOnly")]
+        [HttpGet]
+        public async Task<IActionResult> GetUserRoles(string id)
+        {
+
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://localhost:7230/api/Account/GetUserRoleById?id=" + id);
+
+            return Json(roles);
+        }
+
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AssignRole()
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
@@ -209,10 +240,12 @@ namespace BlogMVC.Controllers
             }
 
             ViewBag.Roles = roles;
-            ViewBag.Users = userList;
+            ViewBag.Users = users;
 
             return View();
         }
+
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> AssignRole(string user, string role)
         {
@@ -222,6 +255,7 @@ namespace BlogMVC.Controllers
             return RedirectToAction("AssignRole");
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> DeleteCategory(Guid id)
         {
@@ -233,6 +267,7 @@ namespace BlogMVC.Controllers
 
         }
 
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<IActionResult> CreateCategory(string name)
         {
@@ -245,6 +280,7 @@ namespace BlogMVC.Controllers
             return RedirectToAction("ListCategories");
         }
 
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ListCategories()
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
@@ -271,6 +307,7 @@ namespace BlogMVC.Controllers
             var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
             var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://localhost:7230/api/Post/GetAllComments");
             var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://localhost:7230/api/Post/GetAllPostTags");
 
             var p = new List<PostCategoryViewModel>();
 
@@ -316,10 +353,26 @@ namespace BlogMVC.Controllers
             ViewBag.Comments = c;
             ViewBag.Categories = new List<string>() { post2 == null ? "" : post2.Category.Name };
             ViewBag.Tags = new List<string>() { "tag" };
-            ViewBag.Author = post2.User.Firstname + " " + post2.User.Lastname;
-            ViewBag.AuthorPicture = post2.User.Photo;
-            ViewBag.Date = post2.Post.CreatedDate;
+
+            //hata veriyor
+            if(post2 != null)
+            {
+                ViewBag.Author = post2.User.Firstname + " " + post2.User.Lastname;
+                ViewBag.AuthorPicture = post2.User.Photo;
+                ViewBag.Date = post2.Post.CreatedDate;
+            }
+            else
+            {
+                ViewBag.Author = "";
+                ViewBag.AuthorPicture = "";
+                ViewBag.Date = "";
+                ViewBag.Role = HttpContext.Session.GetString("Role");
+                ViewBag.Tags = allPostTags;
+                return View(new PostViewModel());
+            }
+
             ViewBag.Role = HttpContext.Session.GetString("Role");
+            ViewBag.Tags = allPostTags;
 
             var post = p.FirstOrDefault(x => x.PostId == id).Post;
 
@@ -336,6 +389,27 @@ namespace BlogMVC.Controllers
             var post = posts.FirstOrDefault(x => x.Id == Id);
 
             var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://localhost:7230/api/Post/GetAllPostTags");
+
+            if(allPostTags != null && post != null)
+            {
+                var postTag = allPostTags.Where(x => x.PostId == post.Id).ToList();
+
+                List<string> tagList = new List<string>();
+
+                foreach (var item in postTag)
+                {
+                    tagList.Add(item.Tag.Title);
+                }
+
+                ViewBag.Tags = tagList;
+
+            }
+            else
+            {
+                post = new PostViewModel();
+                ViewBag.Tags = new List<string>();
+            }
 
             ViewBag.Categories = allCategories;
 
@@ -343,11 +417,49 @@ namespace BlogMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddPost(PostViewModel post, List<Guid> categories = null)
+        public async Task<IActionResult> AddPost(PostViewModel post, string tags, IFormFile photo, List<Guid> categories = null)
         {
+
+            string photoPath = "";
+            if (photo != null)
+            {
+                string uniqueFileName = "";
+
+                // Define the path to save the image
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+
+                // Generate a unique file name to avoid conflicts
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
+
+                // Combine the path with the file name
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save the file to the specified path
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await photo.CopyToAsync(fileStream);
+                }
+
+                // Set the PhotoPath property to the relative path
+                photoPath = "/images/" + uniqueFileName;
+            }
+
+            post.Photo = photoPath;
+
             var userId = HttpContext.Session.GetString("UserId");
 
             var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://localhost:7230/api/Post/GetAllPostTags");
+
+            var postTag = allPostTags.Where(x => x.PostId == post.Id).ToList();
+
+            List<string> tagList = new List<string>();
+
+            if (tags != null)
+            {
+                tagList = tags.Trim().Split(' ').ToList();
+            }
+
 
             ViewBag.Categories = allCategories;
 
@@ -355,6 +467,13 @@ namespace BlogMVC.Controllers
             postRequest.Post = post;
             postRequest.UserId = userId;
             postRequest.CategoryIds = categories;
+            postRequest.Tags = tagList;
+            postRequest.PostTagIds = new List<Guid>();
+
+            foreach (var item in postTag)
+            {
+                postRequest.PostTagIds.Add(item.Id);
+            }
 
             if (post.Id == Guid.Empty)
             {
@@ -407,6 +526,21 @@ namespace BlogMVC.Controllers
             return RedirectToAction("ListUnapprovedComments");
         }
 
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> EditComment(Guid id, string content)
+        {
+            var comment = new CommentViewModel()
+            {
+                Id = id,
+                Content = content
+            };
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/UpdateComment", comment);
+
+
+            return RedirectToAction("ListUnapprovedComments");
+        }
+
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ListUnapprovedComments()
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
@@ -450,6 +584,8 @@ namespace BlogMVC.Controllers
 
             return View();
         }
+
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ApproveComment(Guid id)
         {
 

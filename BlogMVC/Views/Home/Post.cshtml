@@ -2,11 +2,13 @@
     ViewBag.Title = "Post";
     Layout = "~/Views/Template/Index.cshtml";
     var commentList = ViewBag.Comments as List<PostCommentViewModel>;
+    var allTags = ViewBag.Tags as List<PostTagViewModel>;
 }
 @model PostViewModel
 
-@*Başlık*@
-<div class="site-cover site-cover-sm same-height overlay single-page" style="background-image: url('images/hero_5.jpg');">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<div class="site-cover site-cover-sm same-height overlay single-page" style="background-image: url('@Url.Content(Model.Photo)');">
     <div class="container">
         <div class="row same-height justify-content-center">
             <div class="col-md-6">
@@ -53,9 +55,18 @@
 
 
                         Tags:
-                        @foreach (var item in ViewBag.Tags)
+                        @foreach (var item in allTags)
                         {
-                            <a href="#">#@item</a>
+                            if (item.PostId == Model.Id)
+                            {
+                                <a href="#">#@item.Tag.Title</a>
+
+                            }
+                            else
+                            {
+                                continue;
+                            }
+
                         }
 
                 </div>
@@ -69,19 +80,33 @@
                         {
                             @if (item.Comment != null)
                             {
-                                <li class="comment">
+                                <li class="comment" id="comment-@item.Comment.Id">
                                     <div class="vcard">
                                         <img src="@Url.Content(@item.User.Photo)" alt="Image placeholder">
                                     </div>
                                     <div class="comment-body">
                                         <h3>@item.User.Firstname @item.User.Lastname</h3>
                                         <div class="meta">@item.Comment.CreatedDate</div>
-                                        <p>@item.Comment.Content</p>
-                                        <p><a href="#" class="reply rounded">Reply</a></p>
+
+                                        <!-- Display the comment content -->
+                                        <p class="comment-content">@item.Comment.Content</p>
+
+                                        <!-- Hidden edit form -->
+                                        <div class="edit-comment-form" style="display:none;">
+                                            <textarea id="edit-comment-text-@item.Comment.Id" class="form-control" rows="3">@item.Comment.Content</textarea>
+                                            <button class="reply btn-sm rounded px-2 py-2" onclick="submitEdit('@item.Comment.Id')">Save</button>
+                                            <button class="reply btn-sm rounded px-2 py-2" onclick="cancelEdit('@item.Comment.Id')">Cancel</button>
+                                            <br />
+                                            <br />
+                                            <br />
+                                        </div>
+
+                                        <!-- Admin/Editor controls -->
                                         @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
                                         {
-                                            <p><a href="@Url.Action("AddPost", "Home", new { Id = item.Comment.Id })" class="reply btn-sm rounded px-2 py-2">Edit Comment</a></p>
-                                            <p><a href="@Url.Action("DeleteComment", "Home", new { Id = item.Comment.Id })" class="reply btn-sm rounded px-2 py-2">Delete Comment</a></p>
+                                            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="showEditForm('@item.Comment.Id')">Edit Comment</a></p>
+                                            @* <p><a href="@Url.Action("DeleteComment", "Home", new { Id = item.Comment.Id })" class="reply btn-sm rounded px-2 py-2">Delete Comment</a></p> *@
+                                            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="deleteComment('@item.Comment.Id')">Delete Comment</a></p>
                                         }
                                     </div>
                                 </li>
@@ -112,10 +137,10 @@
 
             <div class="col-md-12 col-lg-4 sidebar">
                 <div class="sidebar-box search-form-wrap">
-                    <form action="#" class="sidebar-search-form">
-                        <span class="bi-search"></span>
-                        <input type="text" class="form-control" id="s" placeholder="Type a keyword and hit enter">
-                    </form>
+                    @*                     <form action="#" class="sidebar-search-form">
+                    <span class="bi-search"></span>
+                    <input type="text" class="form-control" id="s" placeholder="Type a keyword and hit enter">
+                    </form> *@
                 </div>
                 <!-- END sidebar-box -->
                 <div class="sidebar-box">
@@ -212,3 +237,94 @@
         </div>
     </div>
 </section>
+
+<script>
+
+    function deneme(id) {
+        console.log("asd")
+        console.log(id)
+    }
+
+    function showEditForm(commentId) {
+        var commentElement = document.getElementById('comment-' + commentId);
+        var commentContent = commentElement.querySelector('.comment-content');
+        var editForm = commentElement.querySelector('.edit-comment-form');
+
+        // Hide the comment content and show the edit form
+        commentContent.style.display = 'none';
+        editForm.style.display = 'block';
+    }
+
+    function cancelEdit(commentId) {
+        var commentElement = document.getElementById('comment-' + commentId);
+        var commentContent = commentElement.querySelector('.comment-content');
+        var editForm = commentElement.querySelector('.edit-comment-form');
+
+        // Show the comment content and hide the edit form
+        commentContent.style.display = 'block';
+        editForm.style.display = 'none';
+    }
+
+    function submitEdit(commentId) {
+        var newContent = document.getElementById('edit-comment-text-' + commentId).value;
+
+        console.log(commentId)
+
+        // Here you would send the updated comment content to your server via AJAX or a form submission.
+        // Example using AJAX (jQuery is assumed to be loaded):
+
+        $.ajax({
+            url: '@Url.Action("EditComment", "Home")',
+            type: 'POST',
+            data: {
+                id: commentId,
+                content: newContent
+            },
+            success: function (response) {
+                // Update the comment content on the page
+                var commentElement = document.getElementById('comment-' + commentId);
+                var commentContent = commentElement.querySelector('.comment-content');
+
+                commentContent.textContent = newContent;
+
+                // Hide the edit form and show the updated content
+                cancelEdit(commentId);
+            },
+            error: function (error) {
+                alert("There was an error updating the comment.");
+            }
+        });
+    }
+
+    function deleteComment(commentId) {
+        var newContent = document.getElementById('edit-comment-text-' + commentId).value;
+
+        console.log(commentId)
+
+        // Here you would send the updated comment content to your server via AJAX or a form submission.
+        // Example using AJAX (jQuery is assumed to be loaded):
+
+        $.ajax({
+            url: '@Url.Action("DeleteComment", "Home")',
+            type: 'POST',
+            data: {
+                id: commentId
+            },
+            success: function (response) {
+                // Update the comment content on the page
+                var commentElement = document.getElementById('comment-' + commentId);
+                var commentContent = commentElement.querySelector('.comment-content');
+
+                commentContent.textContent = newContent;
+
+                // Hide the edit form and show the updated content
+                cancelEdit(commentId);
+                commentElement.style.display = 'none';
+            },
+            error: function (error) {
+                alert("There was an error updating the comment.");
+            }
+        });
+    }
+
+</script>

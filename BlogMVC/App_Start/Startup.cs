@@ -56,7 +56,7 @@ namespace BlogMVC
             {
                 options.AddPolicy("AdminOnly", policy =>
                 {
-                    policy.RequireRole("Admin");
+                    policy.RequireRole("Admin", "Editor");
                 });
 
                 options.AddPolicy("CanEdit", policy =>
