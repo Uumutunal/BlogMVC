@@ -1,0 +1,54 @@
+﻿@model List<PostCategoryViewModel>
+
+@{
+    ViewData["Title"] = "Category Detail";
+    Layout = "~/Views/Template/Index.cshtml";
+    var allCategories = ViewBag.Categories as List<CategoryViewModel>;
+}
+
+
+<div class="text-center">
+    @* <h1 class="display-4">Welcome</h1> *@
+</div>
+
+
+
+<section class="section">
+    <div class="container">
+        <div class="row">
+
+            @foreach (var item in Model.Where(x => x.Post != null))
+            {
+                <div class="col-lg-4 mb-4">
+                    <div class="post-entry-alt">
+                        <a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="img-link">
+                            <img src="@Url.Content(@item.Post.Photo)" alt="@Url.Content("~/images/img_7_horizontal.jpg")" class="img-fluid">
+                        </a>
+                        <div class="excerpt">
+                            <h2><a href="@Url.Action("Post", "Home", new { id = @item.PostId })">@item.Post.Title</a></h2>
+                            <div class="post-meta align-items-center text-left clearfix">
+                                <figure class="author-figure mb-0 me-3 float-start">
+                                    <img src="@Url.Content(@item.User.Photo)" alt="Image" class="img-fluid">
+                                </figure>
+                                <span class="d-inline-block mt-1">By <a href="#">@item.User.Firstname @item.User.Lastname</a></span>
+                                <span>&nbsp;-&nbsp; @item.Post.CreatedDate</span>
+                            </div>
+                            @if (item.Post.Content.Length > 200)
+                            {
+                                <p>@item.Post.Content.Substring(0, 200) ...</p>
+                            }
+                            else
+                            {
+                                <p>@item.Post.Content</p>
+
+                            }
+                            <p><a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="read-more">Continue Reading</a></p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+
+    </div>
+</section>
