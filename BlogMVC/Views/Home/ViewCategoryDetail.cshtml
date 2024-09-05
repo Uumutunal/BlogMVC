@@ -15,6 +15,17 @@
 
 <section class="section">
     <div class="container">
+        <div class="col-sm-6">
+            @if (@Model.FirstOrDefault(x => x.Post != null) != null)
+            {
+                <h2 class="posts-entry-title">@Model.FirstOrDefault(x => x.Post != null).Category.Name</h2>
+            }
+            else
+            {
+                <h2 class="posts-entry-title">There are no posts in this category</h2>
+            }
+        </div>
+        <br />
         <div class="row">
 
             @foreach (var item in Model.Where(x => x.Post != null))

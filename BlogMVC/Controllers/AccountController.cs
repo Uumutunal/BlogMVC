@@ -197,6 +197,9 @@ namespace BlogMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Profile(UserViewModel user, IFormFile image)
         {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
 
@@ -233,6 +236,7 @@ namespace BlogMVC.Controllers
             user.Id = HttpContext.Session.GetString("UserId");
 
             var userUpdate = new UserViewModel() { Email = user.Email, Username = user.Username, Password = user.Password, Firstname = user.Firstname, Lastname = user.Lastname, Photo = photoPath, Id = user.Id, ConfirmPassword = user.ConfirmPassword };
+
 
             var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Account/Update", userUpdate);
 

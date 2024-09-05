@@ -17,7 +17,7 @@
     <div class="container mt-5">
         <div class="container mt-5">
             <h2>Select Options</h2>
-            <form asp-action="AssignRole" method="post">
+            <form id="assignRoleForm">
                 <div class="form-group">
                     <label for="user">Users:</label>
                     <select id="user" name="user" class="form-control">
@@ -46,12 +46,12 @@
             </form>
 
             <!-- Form to remove a role from the selected user -->
-            <form asp-action="RemoveRole" method="post" class="mt-3">
-                <input type="hidden" id="removeUserId" name="userId" value="" />
-                <input type="hidden" id="removeRoleId" name="roleId" value="" />
+            @* <form asp-action="RemoveRole" method="post" class="mt-3"> *@
+            <input type="hidden" id="removeUserId" name="email" value="" />
+            <input type="hidden" id="removeRoleId" name="roleName" value="" />
 
-                <button type="button" class="btn btn-danger mt-3" onclick="removeRole()">Remove Role</button>
-            </form>
+            <button href="javascript:void(0);" type="button" class="btn btn-danger mt-3" onclick="removeRole()">Remove Role</button>
+            @* </form> *@
 
 
             <!-- Div to display user roles -->
@@ -74,9 +74,10 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('#user').change(function () {
-            var userId = $(this).val();
-            console.log(userId)
+        // Function to fetch user roles based on user ID
+        function fetchUserRoles() {
+            var userId = $('#user').val();  // Get the selected user ID
+
             // Make an AJAX request to fetch user roles
             $.ajax({
                 url: '@Url.Action("GetUserRoles", "Home")',
@@ -88,7 +89,6 @@
 
                     // Add roles to the list
                     roles.forEach(function (role) {
-                        console.log(role)
                         $('#rolesList').append('<li>' + role + '</li>');
                     });
                 },
@@ -96,6 +96,50 @@
                     console.log("An error occurred while fetching the user roles.");
                 }
             });
+        }
+
+        // Handle the form submission
+        $('#assignRoleForm').submit(function (e) {
+            e.preventDefault(); // Prevent the form from submitting normally
+
+            var userEmail = $('#user').val();
+            var roleName = $('#role').val();
+
+            // Make an AJAX request to the server to assign the role
+            $.ajax({
+                url: '@Url.Action("AssignRole", "Home")', // Your action method URL
+                type: 'POST',
+                data: {
+                    user: userEmail,
+                    Role: roleName
+                },
+                success: function (roles) {
+                    // Handle success - display a success message, reload, etc.
+
+
+
+                    // Clear existing roles
+                    $('#rolesList').empty();
+
+                    // Add roles to the list
+                    roles.forEach(function (role) {
+                        console.log(role)
+                        $('#rolesList').append('<li>' + role + '</li>');
+                    });
+                },
+                error: function (xhr, status, error) {
+                    // Handle error - display an error message
+                    console.log("An error occurred: " + error);
+                }
+            });
+        });
+
+        // Run the function when the page is loaded the first time
+        fetchUserRoles();
+
+        // Also bind the change event for future user selections
+        $('#user').change(function () {
+            fetchUserRoles();
         });
     });
 
@@ -103,13 +147,42 @@
         var userEmail = document.getElementById("user").value;
         var roleName = document.getElementById("role").value;
 
+
         // Assuming you have hidden inputs to store user and role ID
-        //var userId = document.querySelector(`#userData-${userEmail}`).value;
+        // var userId = document.querySelector(`#userData-${userEmail}`).value;
 
-        document.getElementById("removeUserId").value = "userId";
-        document.getElementById("removeRoleId").value = roleName;
+        // document.getElementById("removeUserId").value = "userId";
+        // document.getElementById("removeRoleId").value = roleName;
 
-        // Submit the form
-        document.querySelector("form[asp-action='RemoveRole']").submit();
+        // // Submit the form
+        // document.querySelector("form[asp-action='RemoveRole']").submit();
+
+        $.ajax({
+            url: '@Url.Action("RemoveRole", "Home")',
+            type: 'POST',
+            data: {
+                email: userEmail,
+                roleName: roleName
+            },
+            success: function (roles) {
+
+
+                // Clear existing roles
+                $('#rolesList').empty();
+
+                // Add roles to the list
+                roles.forEach(function (role) {
+                    console.log(role)
+                    $('#rolesList').append('<li>' + role + '</li>');
+                });
+
+            },
+            error: function (error) {
+                console.log("There was an error updating the comment.");
+            }
+        });
+
+
+
     }
 </script>

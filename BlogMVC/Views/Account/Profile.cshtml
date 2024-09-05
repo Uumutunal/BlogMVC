@@ -11,7 +11,7 @@
 <div class="container">
     <h2>User Profile</h2>
 
-    <form asp-action="Profile" method="post" enctype="multipart/form-data">
+    <form id="profileForm" asp-action="Profile" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="Firstname" class="form-label">Firstname</label>
             <input type="text" class="form-control" id="Firstname" name="Firstname" value="@Model.Firstname" required>
@@ -25,7 +25,7 @@
 
         <div class="form-group mb-3">
             <label for="Photo">Upload Photo</label>
-            <input type="file" id="image" name="image" class="form-control" accept="image/*" />
+            <input type="file" id="image" name="image" class="form-control" accept="image/*" value="@Model.Photo" />
         </div>
 
         <div class="mb-3">
@@ -40,7 +40,7 @@
 
         <div class="mb-3">
             <label for="NewPassword" class="form-label">New Password</label>
-            <input type="password" class="form-control" id="NewPassword" name="NewPassword">
+            <input type="password" class="form-control" id="NewPassword" name="NewPassword" value="@Model.NewPassword">
         </div>
 
         <div class="mb-3">
@@ -83,3 +83,20 @@
     </div>
 </div>
 
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#profileForm').submit(function (e) {
+            var newPassword = $('#NewPassword').val();
+            var confirmPassword = $('#ConfirmPassword').val();
+
+
+            // Check if the new password matches the confirm password
+            if (newPassword !== confirmPassword) {
+                e.preventDefault(); // Prevent form submission
+                alert("New Password and Confirm New Password do not match.");
+            }
+        });
+    });
+</script>

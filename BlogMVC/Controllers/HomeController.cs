@@ -67,6 +67,8 @@ namespace BlogMVC.Controllers
                 else if (roles.Contains("Editor"))
                 {
                     HttpContext.Session.SetString("Role", "Editor");
+                    HttpContext.Session.SetString("IsAdmin", "true");
+                    ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
                 }
                 else
                 {
@@ -234,12 +236,16 @@ namespace BlogMVC.Controllers
 
         [Authorize(Policy = "AdminOnly")]
         [HttpPost]
-        public async Task<IActionResult> RemoveRole(string userId, string roleId)
+        public async Task<IActionResult> RemoveRole(string email, string roleName)
         {
 
+            var updateRoleRequest = new UpdateRoleRequest { UserId = email, RoleName = roleName };
+            var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Admin/RemoveUserRole", updateRoleRequest);
 
-            // Redirect or return a success message
-            return RedirectToAction("AssignRole");
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://localhost:7230/api/Account/GetUserRoleById?id=" + email);
+
+
+            return Json(roles);
         }
 
         [Authorize(Policy = "AdminOnly")]
@@ -282,7 +288,9 @@ namespace BlogMVC.Controllers
             var updateRoleRequest = new UpdateRoleRequest { UserId = user, RoleName = role };
             var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Admin/UpdateRole", updateRoleRequest);
 
-            return RedirectToAction("AssignRole");
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://localhost:7230/api/Account/GetUserRoleById?id=" + user);
+
+            return Json(roles);
         }
 
         [Authorize(Policy = "AdminOnly")]
