@@ -11,7 +11,7 @@
 <div class="container">
     <h2>User Profile</h2>
 
-    <form asp-action="Profile" method="post">
+    <form asp-action="Profile" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="Firstname" class="form-label">Firstname</label>
             <input type="text" class="form-control" id="Firstname" name="Firstname" value="@Model.Firstname" required>
@@ -20,6 +20,14 @@
             <label for="Lastname" class="form-label">Lastname</label>
             <input type="text" class="form-control" id="Lastname" name="Lastname" value="@Model.Lastname" required>
         </div>
+
+        <img src="@Model.Photo" alt="User Photo" class="img-thumbnail" />
+
+        <div class="form-group mb-3">
+            <label for="Photo">Upload Photo</label>
+            <input type="file" id="image" name="image" class="form-control" accept="image/*" />
+        </div>
+
         <div class="mb-3">
             <label for="Email" class="form-label">Email</label>
             <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required>
@@ -42,8 +50,36 @@
 
         <button type="submit" class="btn btn-primary">Update Profile</button>
     </form>
+
+    <br/>
+    <br/>
+    <br/>
+    <!-- Delete Account Button -->
+    <a href="@Url.Action("DeleteAccount", "Account")" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">Delete Account</a>
+
 </div>
 
 <br />
 <br />
 <br />
+
+
+<!-- Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete your account? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="@Url.Action("DeleteAccount", "Account")" class="btn btn-danger">Yes, Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+

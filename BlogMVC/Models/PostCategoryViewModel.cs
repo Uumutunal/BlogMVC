@@ -8,5 +8,7 @@ namespace BlogMVC.Models
         public PostViewModel Post { get; set; }
         public Guid CategoryId { get; set; }
         public CategoryViewModel Category { get; set; }
+        public UserViewModel User { get; set; }
+        public string UserId { get; set; }
     }
 }

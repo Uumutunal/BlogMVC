@@ -6,6 +6,15 @@ using System.Threading.Tasks;
 using BlogMVC.Models;
 using System.Net.Http;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
+using System.Reflection;
+using System.IdentityModel.Tokens.Jwt;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNet.Identity;
+
 
 namespace BlogMVC.Controllers
 {
@@ -13,11 +22,12 @@ namespace BlogMVC.Controllers
     {
         private const string XsrfKey = "XsrfId";
         private readonly HttpClient _httpClient;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public AccountController(HttpClient httpClient)
+        public AccountController(HttpClient httpClient, IWebHostEnvironment webHostEnvironment)
         {
             _httpClient = httpClient;
-
+            _webHostEnvironment = webHostEnvironment;
         }
         public IActionResult Login()
         {
@@ -38,6 +48,7 @@ namespace BlogMVC.Controllers
             var login = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Login", user);
 
 
+
             if (login.IsSuccessStatusCode)
             {
                 var loginResponse = await login.Content.ReadFromJsonAsync<LoginResponse>();
@@ -47,22 +58,51 @@ namespace BlogMVC.Controllers
                     // Store token and user ID in session or cookies
                     HttpContext.Session.SetString("IsLogged", "true");
                     HttpContext.Session.SetString("UserId", loginResponse.UserId);
-                    // Optionally store token
-                    //HttpContext.Session.SetString("Token", loginResponse.Token);
+                    HttpContext.Session.SetString("Token", loginResponse.Token);
+
+                    var handler = new JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(loginResponse.Token);
+
+                    // Extract roles from the claims
+                    var roles = jwtToken.Claims
+                        .Where(c => c.Type == ClaimTypes.Role)
+                        .Select(c => c.Value)
+                        .ToList();
+
+
+                    var claims = new List<Claim>
+                    {
+                        //new Claim(ClaimTypes.Role, "Admin")
+                    };
+
+                    if (roles.Any())
+                    {
+                        foreach (var role in roles)
+                        {
+                            claims.Add(new Claim(ClaimTypes.Role, role));
+                        }
+                    }
+                    else
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, "NoRole"));
+                    }
+                    claims.Add(new Claim(ClaimTypes.Name, email));
+
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity),
+                        new AuthenticationProperties
+                        {
+                            IsPersistent = true
+                        });
 
                     return RedirectToAction("Index", "Home");
                 }
             }
 
-            //if (username == "admin" && password == "123")
-            //{
-            //    ViewBag.Login = "true";
-            //    HttpContext.Session.SetString("IsLogged", "true");
-            //    ViewBag.IsAdmin = "true";
-            //    HttpContext.Session.SetString("IsAdmin", "true");
-
-            //    return RedirectToAction("Index", "Home");
-            //}
             ViewBag.Login = "false";
 
             return View();
@@ -73,25 +113,55 @@ namespace BlogMVC.Controllers
 
 
             return View();
-		}
+        }
 
         [HttpPost]
-        public async Task<IActionResult> Register(string username, string email, string password, string confirmPassword)
+        public async Task<IActionResult> Register(string username, string email, string password, string confirmPassword, IFormFile photo, string firstname, string lastname)
         {
+            string photoPath = "";
+            if (photo != null)
+            {
+                string uniqueFileName = "";
+
+                // Define the path to save the image
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+
+                // Generate a unique file name to avoid conflicts
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
+
+                // Combine the path with the file name
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save the file to the specified path
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await photo.CopyToAsync(fileStream);
+                }
+
+                // Set the PhotoPath property to the relative path
+                photoPath = "/images/" + uniqueFileName;
+            }
+
             var user = new UserViewModel()
             {
                 Username = username,
                 Email = email,
                 Password = password,
-                ConfirmPassword = confirmPassword
+                ConfirmPassword = confirmPassword,
+                Photo = photoPath,
+                Firstname = firstname,
+                Lastname = lastname
             };
 
             var register = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Register", user);
 
             if (register.IsSuccessStatusCode)
             {
+                var registeredUser = await register.Content.ReadFromJsonAsync<UserViewModel>();
+
                 ViewBag.Login = "true";
                 HttpContext.Session.SetString("IsLogged", "true");
+                HttpContext.Session.SetString("UserId", registeredUser.Id);
                 return RedirectToAction("Index", "Home");
 
             }
@@ -99,14 +169,19 @@ namespace BlogMVC.Controllers
             return View();
         }
 
-		public async Task<IActionResult> Profile()
-		{
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Profile()
+        {
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
 
+            var token = HttpContext.Session.GetString("Token");
             var loggedUserId = HttpContext.Session.GetString("UserId");
+
+
             var loggedUser = await _httpClient.GetAsync($"https://localhost:7230/api/Account/user?id={loggedUserId}");
 
+            //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             if (loggedUser.IsSuccessStatusCode)
             {
@@ -117,44 +192,91 @@ namespace BlogMVC.Controllers
             }
 
             return View();
-		}
+        }
 
         [HttpPost]
-        public async Task<IActionResult> Profile(UserViewModel user)
+        public async Task<IActionResult> Profile(UserViewModel user, IFormFile image)
         {
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
 
-            var userUpdate = new UserViewModel() { Email = user.Email, Username = user.Username, Password = user.Password, Firstname = user.Firstname, Lastname = user.Lastname };
+            string photoPath = "";
+            if (image != null)
+            {
+                string uniqueFileName = "";
+
+                // Define the path to save the image
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+
+                // Generate a unique file name to avoid conflicts
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(image.FileName);
+
+                // Combine the path with the file name
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save the file to the specified path
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                // Set the PhotoPath property to the relative path
+                photoPath = "/images/" + uniqueFileName;
+            }
+
 
             //user.ConfirmPassword = "";
-            if(user.ConfirmPassword == null)
+            if (user.ConfirmPassword == null)
             {
                 user.ConfirmPassword = "";
             }
             user.Id = HttpContext.Session.GetString("UserId");
 
-            var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Account/Update", user);
+            var userUpdate = new UserViewModel() { Email = user.Email, Username = user.Username, Password = user.Password, Firstname = user.Firstname, Lastname = user.Lastname, Photo = photoPath, Id = user.Id, ConfirmPassword = user.ConfirmPassword };
+
+            var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Account/Update", userUpdate);
 
 
 
             return View(userUpdate);
         }
 
-		public IActionResult Logout()
-		{
+        public IActionResult Logout()
+        {
             ViewBag.Logout = "false";
-			//HttpContext.Session.SetString("IsLogged", "false");
-			//HttpContext.Session.SetString("IsAdmin", "false");
-			//HttpContext.Session.SetString("UserId", "");
+            //HttpContext.Session.SetString("IsLogged", "false");
+            //HttpContext.Session.SetString("IsAdmin", "false");
+            //HttpContext.Session.SetString("UserId", "");
 
             HttpContext.Session.Clear();
 
 
             return RedirectToAction("Index", "Home");
-		}
+        }
 
-		public IActionResult Index()
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+            var user = await _httpClient.GetAsync($"https://localhost:7230/api/Account/user?id={userId}");
+            var loggedUser = await user.Content.ReadFromJsonAsync<UserViewModel>();
+            
+            string imageFolderPath = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+            string fileName = Path.GetFileName(loggedUser.Photo);
+            string filePath = Path.Combine(imageFolderPath, fileName);
+
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            var result = await _httpClient.PostAsync($"https://localhost:7230/api/Account/DeleteAccount?id={userId}", null);
+
+
+            return RedirectToAction("Logout");
+        }
+
+        public IActionResult Index()
         {
             return View();
         }
@@ -193,8 +315,8 @@ namespace BlogMVC.Controllers
                 return Redirect(returnUrl);
             }
 
-			HttpContext.Session.SetString("IsLogged", "true");
-			return RedirectToAction("Index", "Home");
+            HttpContext.Session.SetString("IsLogged", "true");
+            return RedirectToAction("Index", "Home");
         }
     }
 }

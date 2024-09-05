@@ -30,10 +30,14 @@ namespace BlogMVC
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting();
-			app.UseSession();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
-			app.UseAuthorization();
+            app.UseRouting();
+            app.UseSession();
+            app.UseAuthentication(); // Ensure this is called to set up authentication middleware
+            app.UseAuthorization(); // Ensure this is called to set up authorization middleware
+
 
             app.MapControllerRoute(
                 name: "default",

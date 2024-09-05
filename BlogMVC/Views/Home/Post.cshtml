@@ -1,0 +1,330 @@
+﻿@{
+    ViewBag.Title = "Post";
+    Layout = "~/Views/Template/Index.cshtml";
+    var commentList = ViewBag.Comments as List<PostCommentViewModel>;
+    var allTags = ViewBag.Tags as List<PostTagViewModel>;
+}
+@model PostViewModel
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<div class="site-cover site-cover-sm same-height overlay single-page" style="background-image: url('@Url.Content(Model.Photo)');">
+    <div class="container">
+        <div class="row same-height justify-content-center">
+            <div class="col-md-6">
+                <div class="post-entry text-center">
+                    <h1 class="mb-4">@Model.Title</h1>
+                    <div class="post-meta align-items-center text-center">
+                        <figure class="author-figure mb-0 me-3 d-inline-block"><img src="@Url.Content(ViewBag.AuthorPicture)" alt="Image" class="img-fluid"></figure>
+                        <span class="d-inline-block mt-1">By @ViewBag.Author</span>
+                        <span>&nbsp;-&nbsp; @ViewBag.Date</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<section class="section">
+    <div class="container">
+        @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
+        {
+            <p><a href="@Url.Action("AddPost", "Home", new { Id = Model.Id })" class="btn btn-danger btn-sm rounded px-2 py-2">Edit Post</a></p>
+        }
+
+        <div class="row blog-entries element-animate">
+
+            <div class="col-md-12 col-lg-8 main-content">
+
+                <div class="post-content-body">
+                    @Model.Content
+                </div>
+
+
+                <div class="pt-5">
+                    <p>
+                        Categories:
+                        @foreach (var item in ViewBag.Categories)
+                        {
+                            <a href="#">@item</a>
+                        }
+
+
+                        Tags:
+                        @foreach (var item in allTags)
+                        {
+                            if (item.PostId == Model.Id)
+                            {
+                                <a href="#">#@item.Tag.Title</a>
+
+                            }
+                            else
+                            {
+                                continue;
+                            }
+
+                        }
+
+                </div>
+
+
+                <div class="pt-5 comment-wrap">
+                    <h3 class="mb-5 heading"> Comments</h3>
+                    <ul class="comment-list">
+
+                        @foreach (var item in commentList)
+                        {
+                            @if (item.Comment != null)
+                            {
+                                <li class="comment" id="comment-@item.Comment.Id">
+                                    <div class="vcard">
+                                        <img src="@Url.Content(@item.User.Photo)" alt="Image placeholder">
+                                    </div>
+                                    <div class="comment-body">
+                                        <h3>@item.User.Firstname @item.User.Lastname</h3>
+                                        <div class="meta">@item.Comment.CreatedDate</div>
+
+                                        <!-- Display the comment content -->
+                                        <p class="comment-content">@item.Comment.Content</p>
+
+                                        <!-- Hidden edit form -->
+                                        <div class="edit-comment-form" style="display:none;">
+                                            <textarea id="edit-comment-text-@item.Comment.Id" class="form-control" rows="3">@item.Comment.Content</textarea>
+                                            <button class="reply btn-sm rounded px-2 py-2" onclick="submitEdit('@item.Comment.Id')">Save</button>
+                                            <button class="reply btn-sm rounded px-2 py-2" onclick="cancelEdit('@item.Comment.Id')">Cancel</button>
+                                            <br />
+                                            <br />
+                                            <br />
+                                        </div>
+
+                                        <!-- Admin/Editor controls -->
+                                        @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
+                                        {
+                                            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="showEditForm('@item.Comment.Id')">Edit Comment</a></p>
+                                            @* <p><a href="@Url.Action("DeleteComment", "Home", new { Id = item.Comment.Id })" class="reply btn-sm rounded px-2 py-2">Delete Comment</a></p> *@
+                                            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="deleteComment('@item.Comment.Id')">Delete Comment</a></p>
+                                        }
+                                    </div>
+                                </li>
+                            }
+                        }
+
+
+                        <!-- END comment-list -->
+
+                        <div class="comment-form-wrap pt-5">
+                            <h3 class="mb-5">Leave a comment</h3>
+                            <form asp-action="AddComment" class="p-5 bg-light" method="post">
+                                <div class="form-group">
+                                    <label for="message">Message</label>
+                                    <textarea type="text" name="message" id="message" name="message" cols="30" rows="10" class="form-control"></textarea>
+                                </div>
+                                <input type="hidden" id="postId" name="postId" value="@Model.Id">
+                                <div class="form-group">
+                                    <input type="submit" value="Post Comment" class="btn btn-primary">
+                                </div>
+                            </form>
+                        </div>
+                </div>
+
+            </div>
+
+            <!-- END main-content -->
+
+            <div class="col-md-12 col-lg-4 sidebar">
+                <div class="sidebar-box search-form-wrap">
+                    @*                     <form action="#" class="sidebar-search-form">
+                    <span class="bi-search"></span>
+                    <input type="text" class="form-control" id="s" placeholder="Type a keyword and hit enter">
+                    </form> *@
+                </div>
+                <!-- END sidebar-box -->
+                <div class="sidebar-box">
+                    <div class="bio text-center">
+                        <img src="@Url.Content(ViewBag.AuthorPicture)" alt="Image Placeholder" class="img-fluid mb-3">
+                        <div class="bio-body">
+                            <h2>@ViewBag.Author</h2>
+                            <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Exercitationem facilis sunt repellendus excepturi beatae porro debitis voluptate nulla quo veniam fuga sit molestias minus.</p>
+                            <p><a href="#" class="btn btn-primary btn-sm rounded px-2 py-2">Read my bio</a></p>
+                            <p class="social">
+                                <a href="#" class="p-2"><span class="fa fa-facebook"></span></a>
+                                <a href="#" class="p-2"><span class="fa fa-twitter"></span></a>
+                                <a href="#" class="p-2"><span class="fa fa-instagram"></span></a>
+                                <a href="#" class="p-2"><span class="fa fa-youtube-play"></span></a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- END sidebar-box -->
+                <div class="sidebar-box">
+                    <h3 class="heading">Popular Posts</h3>
+                    <div class="post-entry-sidebar">
+                        <ul>
+                            <li>
+                                <a href="">
+                                    <img src="images/img_1_sq.jpg" alt="Image placeholder" class="me-4 rounded">
+                                    <div class="text">
+                                        <h4>There’s a Cool New Way for Men to Wear Socks and Sandals</h4>
+                                        <div class="post-meta">
+                                            <span class="mr-2">March 15, 2018 </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="">
+                                    <img src="images/img_2_sq.jpg" alt="Image placeholder" class="me-4 rounded">
+                                    <div class="text">
+                                        <h4>There’s a Cool New Way for Men to Wear Socks and Sandals</h4>
+                                        <div class="post-meta">
+                                            <span class="mr-2">March 15, 2018 </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="">
+                                    <img src="images/img_3_sq.jpg" alt="Image placeholder" class="me-4 rounded">
+                                    <div class="text">
+                                        <h4>There’s a Cool New Way for Men to Wear Socks and Sandals</h4>
+                                        <div class="post-meta">
+                                            <span class="mr-2">March 15, 2018 </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- END sidebar-box -->
+
+                <div class="sidebar-box">
+                    <h3 class="heading">Categories</h3>
+                    <ul class="categories">
+                        <li><a href="#">Food <span>(12)</span></a></li>
+                        <li><a href="#">Travel <span>(22)</span></a></li>
+                        <li><a href="#">Lifestyle <span>(37)</span></a></li>
+                        <li><a href="#">Business <span>(42)</span></a></li>
+                        <li><a href="#">Adventure <span>(14)</span></a></li>
+                    </ul>
+                </div>
+                <!-- END sidebar-box -->
+
+                <div class="sidebar-box">
+                    <h3 class="heading">Tags</h3>
+                    <ul class="tags">
+                        <li><a href="#">Travel</a></li>
+                        <li><a href="#">Adventure</a></li>
+                        <li><a href="#">Food</a></li>
+                        <li><a href="#">Lifestyle</a></li>
+                        <li><a href="#">Business</a></li>
+                        <li><a href="#">Freelancing</a></li>
+                        <li><a href="#">Travel</a></li>
+                        <li><a href="#">Adventure</a></li>
+                        <li><a href="#">Food</a></li>
+                        <li><a href="#">Lifestyle</a></li>
+                        <li><a href="#">Business</a></li>
+                        <li><a href="#">Freelancing</a></li>
+                    </ul>
+                </div>
+            </div>
+            <!-- END sidebar -->
+
+        </div>
+    </div>
+</section>
+
+<script>
+
+    function deneme(id) {
+        console.log("asd")
+        console.log(id)
+    }
+
+    function showEditForm(commentId) {
+        var commentElement = document.getElementById('comment-' + commentId);
+        var commentContent = commentElement.querySelector('.comment-content');
+        var editForm = commentElement.querySelector('.edit-comment-form');
+
+        // Hide the comment content and show the edit form
+        commentContent.style.display = 'none';
+        editForm.style.display = 'block';
+    }
+
+    function cancelEdit(commentId) {
+        var commentElement = document.getElementById('comment-' + commentId);
+        var commentContent = commentElement.querySelector('.comment-content');
+        var editForm = commentElement.querySelector('.edit-comment-form');
+
+        // Show the comment content and hide the edit form
+        commentContent.style.display = 'block';
+        editForm.style.display = 'none';
+    }
+
+    function submitEdit(commentId) {
+        var newContent = document.getElementById('edit-comment-text-' + commentId).value;
+
+        console.log(commentId)
+
+        // Here you would send the updated comment content to your server via AJAX or a form submission.
+        // Example using AJAX (jQuery is assumed to be loaded):
+
+        $.ajax({
+            url: '@Url.Action("EditComment", "Home")',
+            type: 'POST',
+            data: {
+                id: commentId,
+                content: newContent
+            },
+            success: function (response) {
+                // Update the comment content on the page
+                var commentElement = document.getElementById('comment-' + commentId);
+                var commentContent = commentElement.querySelector('.comment-content');
+
+                commentContent.textContent = newContent;
+
+                // Hide the edit form and show the updated content
+                cancelEdit(commentId);
+            },
+            error: function (error) {
+                alert("There was an error updating the comment.");
+            }
+        });
+    }
+
+    function deleteComment(commentId) {
+        var newContent = document.getElementById('edit-comment-text-' + commentId).value;
+
+        console.log(commentId)
+
+        // Here you would send the updated comment content to your server via AJAX or a form submission.
+        // Example using AJAX (jQuery is assumed to be loaded):
+
+        $.ajax({
+            url: '@Url.Action("DeleteComment", "Home")',
+            type: 'POST',
+            data: {
+                id: commentId
+            },
+            success: function (response) {
+                // Update the comment content on the page
+                var commentElement = document.getElementById('comment-' + commentId);
+                var commentContent = commentElement.querySelector('.comment-content');
+
+                commentContent.textContent = newContent;
+
+                // Hide the edit form and show the updated content
+                cancelEdit(commentId);
+                commentElement.style.display = 'none';
+            },
+            error: function (error) {
+                alert("There was an error updating the comment.");
+            }
+        });
+    }
+
+</script>
