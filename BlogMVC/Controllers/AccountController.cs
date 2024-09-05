@@ -226,6 +226,8 @@ namespace BlogMVC.Controllers
                 // Set the PhotoPath property to the relative path
                 photoPath = "/images/" + uniqueFileName;
             }
+              
+
 
 
             //user.ConfirmPassword = "";
