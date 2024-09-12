@@ -31,7 +31,7 @@
 
 <section class="section">
     <div class="container">
-        @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
+        @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor" || ViewBag.IsDraft == "True")
         {
             <p><a href="@Url.Action("AddPost", "Home", new { Id = Model.Id })" class="btn btn-danger btn-sm rounded px-2 py-2">Edit Post</a></p>
         }

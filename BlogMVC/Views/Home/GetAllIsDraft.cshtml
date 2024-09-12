@@ -78,11 +78,11 @@
                                     }
                                     <p><a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="read-more">Continue Reading</a></p>
                                     <form asp-action="ApprovePost" method="POST" style="display:inline">
-                                        <a href="@Url.Action("ApprovePost", new { Id = @item.PostId })" class="read-more text-danger">Approve</a>
+                                        <a href="@Url.Action("ApproveDraft", new { Id = @item.PostId })" class="read-more text-danger">Approve Draft</a>
 
                                     </form>
-                                    <form asp-action="DeletePost" method="POST" style="display:inline">
-                                        <a href="@Url.Action("ApprovePost", new { Id = @item.PostId })" class="read-more text-danger">Delete</a>
+                                    <form asp-action="DeleteDraft" method="POST" style="display:inline">
+                                        <a href="@Url.Action("DeleteDraft", new { Id = @item.PostId })" class="read-more text-danger">Delete</a>
                                     </form>
                                 </div>
                             </div>

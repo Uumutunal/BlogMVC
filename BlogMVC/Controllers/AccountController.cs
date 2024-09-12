@@ -174,6 +174,7 @@ namespace BlogMVC.Controllers
         {
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
 
             var token = HttpContext.Session.GetString("Token");
             var loggedUserId = HttpContext.Session.GetString("UserId");
@@ -199,6 +200,8 @@ namespace BlogMVC.Controllers
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
+
 
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
@@ -250,9 +253,6 @@ namespace BlogMVC.Controllers
         public IActionResult Logout()
         {
             ViewBag.Logout = "false";
-            //HttpContext.Session.SetString("IsLogged", "false");
-            //HttpContext.Session.SetString("IsAdmin", "false");
-            //HttpContext.Session.SetString("UserId", "");
 
             HttpContext.Session.Clear();
 

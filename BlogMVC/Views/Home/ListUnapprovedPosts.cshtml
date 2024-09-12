@@ -82,7 +82,7 @@
 
                                     </form>
                                     <form asp-action="DeletePost" method="POST" style="display:inline">
-                                        <a href="@Url.Action("ApprovePost", new { Id = @item.PostId })" class="read-more text-danger">Delete</a>
+                                        <a href="@Url.Action("DeletePost", new { Id = @item.PostId })" class="read-more text-danger">Delete</a>
                                     </form>
                                 </div>
                             </div>
