@@ -1,41 +1,57 @@
 ﻿@model List<PostCategoryViewModel>
 
+
+
 @{
-    ViewData["Title"] = "Home Page";
+
+    ViewData["Title"] = "Author";
     Layout = "~/Views/Template/Index.cshtml";
     var allCategories = ViewBag.Categories as List<CategoryViewModel>;
 }
 
 
-<div class="text-center">
-    @* <h1 class="display-4">Welcome</h1> *@
-</div>
 
 
 
 <section class="section">
     <div class="container">
 
-        @if (ViewBag.Logged == "true")
-        {
-            <p><a href="@Url.Action("AddPost", "Home", new { Id = Guid.Empty })" class="btn btn-danger btn-sm rounded px-2 py-2">Add new post</a></p>
-        }
+        <div class="col-sm-6">
+            <h2 class="posts-entry-title">Draft Post</h2>
+        </div>
 
 
         @foreach (var category in allCategories)
         {
-            
-                <div class="row mb-4">
-                    <div class="col-sm-6">
-                        <h2 class="posts-entry-title">@category.Name</h2>
-                    </div>
-                    <div class="col-sm-6 text-sm-end">
-                        <a href="@Url.Action("ViewCategoryDetail", "Home", new { categoryId = category.Id })" class="read-more">View All</a>
-                    </div>
-                </div>
-                <div class="row">
 
-                    @foreach (var item in Model.Where(x => x.Post != null && x.Category.Name == category.Name).Take(3))
+            int counter = 0;
+
+            @foreach (var item in Model)
+            {
+                if (item.Category.Name == category.Name)
+                {
+                    <div class="row mb-4">
+                        <div class="col-sm-6">
+                            <h2 class="posts-entry-title">@category.Name</h2>
+                        </div>
+                        <div class="col-sm-6 text-sm-end">
+                            <a href="category.html" class="read-more">View All</a>
+                        </div>
+                    </div>
+                    break;
+                }
+            }
+            <div class="row">
+
+                @foreach (var item in Model)
+                {
+
+                    if (item.Post == null)
+                    {
+                        continue;
+                    }
+
+                    if (item.Category.Name == category.Name)
                     {
                         <div class="col-lg-4 mb-4">
                             <div class="post-entry-alt">
@@ -61,12 +77,27 @@
 
                                     }
                                     <p><a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="read-more">Continue Reading</a></p>
+                                    <form asp-action="ApprovePost" method="POST" style="display:inline">
+                                        <a href="@Url.Action("ApprovePost", new { Id = @item.PostId })" class="read-more text-danger">Approve</a>
+
+                                    </form>
+                                    <form asp-action="DeletePost" method="POST" style="display:inline">
+                                        <a href="@Url.Action("ApprovePost", new { Id = @item.PostId })" class="read-more text-danger">Delete</a>
+                                    </form>
                                 </div>
                             </div>
                         </div>
+
+                        counter++;
+
+                        if (counter == 3)
+                        {
+                            break;
+                        }
+
                     }
-                </div>
-            
+                }
+            </div>
         }
 
 
