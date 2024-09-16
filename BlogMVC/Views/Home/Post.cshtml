@@ -35,6 +35,14 @@
         {
             <p><a href="@Url.Action("AddPost", "Home", new { Id = Model.Id })" class="btn btn-danger btn-sm rounded px-2 py-2">Edit Post</a></p>
         }
+        @if (ViewBag.IsFavorite == "False")
+        {
+            <p><a href="@Url.Action("AddToFavorites", "Home", new { id = Model.Id })" class="btn btn-danger btn-sm rounded px-2 py-2">Add to Favorites</a></p>
+        }
+        else
+        {
+            <p><a class="btn btn-danger btn-sm rounded px-2 py-2">In Favorites</a></p>
+        }
 
         <div class="row blog-entries element-animate">
 
