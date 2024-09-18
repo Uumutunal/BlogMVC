@@ -1,0 +1,30 @@
+﻿@model List<NotificationViewModel>
+
+    @{
+    Layout = "~/Views/Template/Index.cshtml";
+    }
+
+<h2>Bildirimler</h2>
+
+<ul>
+    @foreach (var notification in Model.Where(n => !n.IsRead))
+    {
+        <div>
+            <p>@notification.Message</p>
+            <small>@Html.DisplayFor(model => notification.CreatedDate, "{0:dd.MM.yyyy HH:mm}")</small>            
+        </div>
+    }
+    <form asp-action="EditNotification" class="p-5 bg-light" method="post">
+        <div class="form-group">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <input type="hidden" id="id" name="id" value="@Model[i].Id">
+            }
+            @if(Model.Count != 0)
+            {
+                <input type="submit" value="Read" class="btn btn-primary">
+            }
+            
+        </div>
+    </form>
+</ul>

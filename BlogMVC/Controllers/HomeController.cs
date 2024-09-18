@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Data;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
@@ -75,6 +76,13 @@ namespace BlogMVC.Controllers
                 else if (roles.Contains("Author"))
                 {
                     HttpContext.Session.SetString("Role", "Author");
+                    HttpContext.Session.SetString("IsAdmin", "false");
+                    ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+                    ViewBag.Role = HttpContext.Session.GetString("Role");
+                }
+                else if (roles.Contains("Subscriber"))
+                {
+                    HttpContext.Session.SetString("Role", "Subscriber");
                     HttpContext.Session.SetString("IsAdmin", "false");
                     ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
                     ViewBag.Role = HttpContext.Session.GetString("Role");
@@ -775,6 +783,25 @@ namespace BlogMVC.Controllers
 
             return RedirectToAction("ListUnapprovedComments");
         }
+
+        public async Task<IActionResult> GetUserNotifications()
+        {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
+            var userId = HttpContext.Session.GetString("UserId");
+            var response = await _httpClient.GetFromJsonAsync<List<NotificationViewModel>>("https://localhost:7230/api/Post/GetNotification");
+            var notifications = response.Where(x => x.UserId == userId).ToList();
+
+            return View(notifications);
+        }
+
+        public async Task<IActionResult> EditNotification(List<Guid> id)
+        { 
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/UpdateNotification", id);
+
+            return RedirectToAction("GetUserNotifications");
+        }
+
 
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ListUnapprovedComments()
