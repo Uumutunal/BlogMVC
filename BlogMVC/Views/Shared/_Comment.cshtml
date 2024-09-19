@@ -42,7 +42,11 @@
         </div>
 
         @* <input type="submit" value="Reply" class="reply btn-sm rounded px-2 py-2" onclick="showReplyForm('@Model.Comment.Id')"> *@
-        <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="showReplyForm('@Model.Comment.Id')">Reply</a></p>
+        @if (ViewBag.Logged == "true")
+        {
+            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="showReplyForm('@Model.Comment.Id')">Reply</a></p>
+        }
+
 
 
         <!-- Admin/Editor controls -->
