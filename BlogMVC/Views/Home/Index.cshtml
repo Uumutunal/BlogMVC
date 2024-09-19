@@ -24,47 +24,49 @@
 
         @foreach (var category in allCategories)
         {
-            <div class="row mb-4">
-                <div class="col-sm-6">
-                    <h2 class="posts-entry-title">@category.Name</h2>
+            
+                <div class="row mb-4">
+                    <div class="col-sm-6">
+                        <h2 class="posts-entry-title">@category.Name</h2>
+                    </div>
+                    <div class="col-sm-6 text-sm-end">
+                        <a href="@Url.Action("ViewCategoryDetail", "Home", new { categoryId = category.Id })" class="read-more">View All</a>
+                    </div>
                 </div>
-                <div class="col-sm-6 text-sm-end">
-                    <a href="@Url.Action("ViewCategoryDetail", "Home", new { categoryId = category.Id })" class="read-more">View All</a>
-                </div>
-            </div>
-            <div class="row">
+                <div class="row">
 
-                @foreach (var item in Model.Where(x => x.Post != null && x.Category.Name == category.Name).Take(3))
-                {
-                    <div class="col-lg-4 mb-4">
-                        <div class="post-entry-alt">
-                            <a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="img-link">
-                                <img src="@Url.Content(@item.Post.Photo)" alt="@Url.Content("~/images/img_7_horizontal.jpg")" class="img-fluid">
-                            </a>
-                            <div class="excerpt">
-                                <h2><a href="@Url.Action("Post", "Home", new { id = @item.PostId })">@item.Post.Title</a></h2>
-                                <div class="post-meta align-items-center text-left clearfix">
-                                    <figure class="author-figure mb-0 me-3 float-start">
-                                        <img src="@Url.Content(@item.User.Photo)" alt="Image" class="img-fluid">
-                                    </figure>
-                                    <span class="d-inline-block mt-1">By <a href="#">@item.User.Firstname @item.User.Lastname</a></span>
-                                    <span>&nbsp;-&nbsp; @item.Post.CreatedDate</span>
+                    @foreach (var item in Model.Where(x => x.Post != null && x.Category.Name == category.Name).Take(3))
+                    {
+                        <div class="col-lg-4 mb-4">
+                            <div class="post-entry-alt">
+                                <a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="img-link">
+                                    <img src="@Url.Content(@item.Post.Photo)" alt="@Url.Content("~/images/img_7_horizontal.jpg")" class="img-fluid">
+                                </a>
+                                <div class="excerpt">
+                                    <h2><a href="@Url.Action("Post", "Home", new { id = @item.PostId })">@item.Post.Title</a></h2>
+                                    <div class="post-meta align-items-center text-left clearfix">
+                                        <figure class="author-figure mb-0 me-3 float-start">
+                                            <img src="@Url.Content(@item.User.Photo)" alt="Image" class="img-fluid">
+                                        </figure>
+                                        <span class="d-inline-block mt-1">By <a href="#">@item.User.Firstname @item.User.Lastname</a></span>
+                                        <span>&nbsp;-&nbsp; @item.Post.CreatedDate</span>
+                                    </div>
+                                    @if (item.Post.Content.Length > 200)
+                                    {
+                                        <p>@item.Post.Content.Substring(0, 200) ...</p>
+                                    }
+                                    else
+                                    {
+                                        <p>@item.Post.Content</p>
+
+                                    }
+                                    <p><a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="read-more">Continue Reading</a></p>
                                 </div>
-                                @if (item.Post.Content.Length > 200)
-                                {
-                                    <p>@item.Post.Content.Substring(0, 200) ...</p>
-                                }
-                                else
-                                {
-                                    <p>@item.Post.Content</p>
-
-                                }
-                                <p><a href="@Url.Action("Post", "Home", new { id = @item.PostId })" class="read-more">Continue Reading</a></p>
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
+                    }
+                </div>
+            
         }
 
 

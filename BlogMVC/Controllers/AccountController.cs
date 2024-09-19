@@ -14,6 +14,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNet.Identity;
+using Microsoft.Extensions.Hosting;
 
 
 namespace BlogMVC.Controllers
@@ -174,6 +175,7 @@ namespace BlogMVC.Controllers
         {
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
 
             var token = HttpContext.Session.GetString("Token");
             var loggedUserId = HttpContext.Session.GetString("UserId");
@@ -199,6 +201,8 @@ namespace BlogMVC.Controllers
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.IsAdmin = HttpContext.Session.GetString("IsAdmin");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
+
 
             ViewBag.Login = "true";
             HttpContext.Session.SetString("IsLogged", "true");
@@ -250,9 +254,6 @@ namespace BlogMVC.Controllers
         public IActionResult Logout()
         {
             ViewBag.Logout = "false";
-            //HttpContext.Session.SetString("IsLogged", "false");
-            //HttpContext.Session.SetString("IsAdmin", "false");
-            //HttpContext.Session.SetString("UserId", "");
 
             HttpContext.Session.Clear();
 
@@ -285,6 +286,43 @@ namespace BlogMVC.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> FollowUser(string authorId, Guid postId)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+
+            var follower = new FollowerViewModel
+            {
+                AuthorId = authorId,
+                SubscriberId = userId,
+                Id = Guid.NewGuid()
+            };
+
+            var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Follow", follower);
+
+            return RedirectToAction("Post", "Home", new { id = postId });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UnFollowUser(string authorId, Guid postId)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+
+            var follower = new FollowerViewModel
+            {
+                AuthorId = authorId,
+                SubscriberId = userId,
+                Id = Guid.NewGuid()
+            };
+
+            var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://localhost:7230/api/Account/GetAllFollowers");
+            var followers = allFollowers.FirstOrDefault(x => x.AuthorId == authorId && x.SubscriberId == userId);
+
+            var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/UnFollow", followers.Id);
+
+            return RedirectToAction("Post", "Home", new { id = postId });
         }
 
 
