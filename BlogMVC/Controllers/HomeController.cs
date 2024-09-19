@@ -196,16 +196,14 @@ namespace BlogMVC.Controllers
 
 
 
-
-            //
             var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
             var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllUnApprovedPost");
             var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
             var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
 
 
-
             var posts = new List<PostCategoryViewModel>();
+
 
             foreach (var item in postCategories)
             {
@@ -254,6 +252,7 @@ namespace BlogMVC.Controllers
 
 
             ViewBag.Categories = categories;
+
             var allUnApprovedPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllUnApprovedPost");
 
             return View(posts);
@@ -343,6 +342,7 @@ namespace BlogMVC.Controllers
             await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/UpdateDraft", Id);
 
             return RedirectToAction("GetAllIsDraft");
+
         }
 
         [Authorize(Policy = "AdminOnly")]
@@ -505,7 +505,9 @@ namespace BlogMVC.Controllers
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.Role = HttpContext.Session.GetString("Role");
+
             var userId = HttpContext.Session.GetString("UserId");
+
 
 
             //var postt = await _httpClient.GetFromJsonAsync<List<PostResponse>>("https://localhost:7230/api/Post/GetPost?id="+ id);

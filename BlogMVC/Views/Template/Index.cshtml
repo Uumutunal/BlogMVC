@@ -80,7 +80,19 @@
 
                                             </ul>
                                         </li>
+                                    }
 
+                                    @if (ViewBag.Role == "Editor")
+                                    {
+                                        <li class="has-children">
+                                            <a href="@Url.Action("ListUnapprovedPosts", "Home")">Editor Panel</a>
+                                            <ul class="dropdown">
+                                                <li><a href="@Url.Action("ListUnapprovedPosts", "Home")">Unapproved Posts</a></li>
+                                                <li><a href="@Url.Action("ListUnapprovedComments", "Home")">Unapproved Comments</a></li>
+                                                <li><a href="@Url.Action("ListCategories", "Home")">Categories</a></li>
+
+                                            </ul>
+                                        </li>
                                     }
                                     else if(ViewBag.Role == "Editor")
                                     {
