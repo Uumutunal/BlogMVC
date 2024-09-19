@@ -8,5 +8,7 @@
         public DateTime? ModifiedDate { get; set; }
         public bool IsApproved { get; set; }
 
+        public Guid? ParentId { get; set; }
+        public bool? IsParent { get; set; }
     }
 }

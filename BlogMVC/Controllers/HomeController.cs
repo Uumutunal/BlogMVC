@@ -648,9 +648,13 @@ namespace BlogMVC.Controllers
                     var p2 = new PostCommentViewModel();
                     p2.User = users.FirstOrDefault(s => s.Id == item.UserId);
                     p2.UserId = item.UserId;
+                    if(comments.FirstOrDefault(s => s.Id == item.CommentId) == null)
+                    {
+                        continue;
+                    }
                     p2.Comment = comments.FirstOrDefault(s => s.Id == item.CommentId);
                     p2.CommentId = item.CommentId;
-
+                    p2.PostId = item.PostId;
                     c.Add(p2);
                 }
             }
@@ -858,6 +862,36 @@ namespace BlogMVC.Controllers
             return RedirectToAction("Index");
         }
 
+
+        public async Task<IActionResult> AddCommentReply(string message, Guid postId, Guid parentId)
+        {
+
+            var userId = HttpContext.Session.GetString("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Post", "Home", new { id = postId });
+            }
+
+            var comment = new CommentViewModel()
+            {
+                Content = message,
+                IsParent = false,
+                ParentId = parentId
+            };
+
+            var postRequest = new AddCommentRequest();
+            postRequest.Comment = comment;
+            postRequest.PostId = postId;
+            postRequest.UserId = HttpContext.Session.GetString("UserId");
+
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/AddComment", postRequest);
+
+            return RedirectToAction("Post", new { id = postId });
+
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddComment(string message, Guid postId)
         {
@@ -873,6 +907,7 @@ namespace BlogMVC.Controllers
             var comment = new CommentViewModel()
             {
                 Content = message,
+                IsParent = true,
             };
 
             var postRequest = new AddCommentRequest();

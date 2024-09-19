@@ -5,6 +5,8 @@
     var allTags = ViewBag.Tags as List<PostTagViewModel>;
 }
 @model PostViewModel
+@using Microsoft.AspNetCore.Mvc.Razor
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -84,42 +86,20 @@
                     <h3 class="mb-5 heading"> Comments</h3>
                     <ul class="comment-list">
 
-                        @foreach (var item in commentList)
-                        {
-                            @if (item.Comment != null)
+
+                        <ul class="comment-list">
+                            @foreach (var comment in commentList.Where(c => c.Comment.ParentId == null))
                             {
-                                <li class="comment" id="comment-@item.Comment.Id">
-                                    <div class="vcard">
-                                        <img src="@Url.Content(@item.User.Photo)" alt="Image placeholder">
-                                    </div>
-                                    <div class="comment-body">
-                                        <h3>@item.User.Firstname @item.User.Lastname</h3>
-                                        <div class="meta">@item.Comment.CreatedDate</div>
-
-                                        <!-- Display the comment content -->
-                                        <p class="comment-content">@item.Comment.Content</p>
-
-                                        <!-- Hidden edit form -->
-                                        <div class="edit-comment-form" style="display:none;">
-                                            <textarea id="edit-comment-text-@item.Comment.Id" class="form-control" rows="3">@item.Comment.Content</textarea>
-                                            <button class="reply btn-sm rounded px-2 py-2" onclick="submitEdit('@item.Comment.Id')">Save</button>
-                                            <button class="reply btn-sm rounded px-2 py-2" onclick="cancelEdit('@item.Comment.Id')">Cancel</button>
-                                            <br />
-                                            <br />
-                                            <br />
-                                        </div>
-
-                                        <!-- Admin/Editor controls -->
-                                        @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
-                                        {
-                                            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="showEditForm('@item.Comment.Id')">Edit Comment</a></p>
-                                            @* <p><a href="@Url.Action("DeleteComment", "Home", new { Id = item.Comment.Id })" class="reply btn-sm rounded px-2 py-2">Delete Comment</a></p> *@
-                                            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="deleteComment('@item.Comment.Id')">Delete Comment</a></p>
-                                        }
-                                    </div>
-                                </li>
+                                if(comment.Comment == null)
+                                {
+                                    continue;
+                                }
+                                @Html.Partial("_Comment", comment)
                             }
-                        }
+                        </ul>
+
+
+                       
 
 
                         <!-- END comment-list -->
@@ -260,6 +240,29 @@
         console.log(id)
     }
 
+    function showReplyForm(commentId) {
+
+        console.log("reply")
+        var commentElement = document.getElementById('comment-' + commentId);
+        var commentContent = commentElement.querySelector('.comment-content');
+        var editForm = commentElement.querySelector('.reply-comment-form');
+
+        // Hide the comment content and show the edit form
+        commentContent.style.display = 'none';
+
+        editForm.style.display = 'block';
+    }
+
+    function cancelReply(commentId) {
+        var commentElement = document.getElementById('comment-' + commentId);
+        var commentContent = commentElement.querySelector('.comment-content');
+        var editForm = commentElement.querySelector('.reply-comment-form');
+
+        // Show the comment content and hide the edit form
+        commentContent.style.display = 'block';
+        editForm.style.display = 'none';
+    }
+
     function showEditForm(commentId) {
         var commentElement = document.getElementById('comment-' + commentId);
         var commentContent = commentElement.querySelector('.comment-content');
@@ -267,6 +270,7 @@
 
         // Hide the comment content and show the edit form
         commentContent.style.display = 'none';
+
         editForm.style.display = 'block';
     }
 
@@ -278,6 +282,29 @@
         // Show the comment content and hide the edit form
         commentContent.style.display = 'block';
         editForm.style.display = 'none';
+    }
+
+    function submitCommentReply() {
+        // Serialize the form data
+        var formData = $('#replyForm').serialize();
+
+        // Send the AJAX request
+        $.ajax({
+            url: '@Url.Action("AddCommentReply", "Home")', // Adjust controller name
+            type: 'POST',
+            data: formData,
+            success: function (response) {
+                // Handle successful response
+                alert('Comment added successfully!');
+                // Optionally, you could hide the form or clear it
+                $('.reply-comment-form').hide();
+                $('#replyForm')[0].reset();
+            },
+            error: function (xhr, status, error) {
+                // Handle errors
+                alert('An error occurred: ' + error);
+            }
+        });
     }
 
     function submitEdit(commentId) {

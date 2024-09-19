@@ -1,0 +1,66 @@
+﻿@model PostCommentViewModel
+@{
+
+    var commentList = ViewBag.Comments as List<PostCommentViewModel>;
+
+}
+<li class="comment" id="comment-@Model.Comment.Id">
+    <div class="vcard">
+        <img src="@Url.Content(Model.User.Photo)" alt="Image placeholder">
+    </div>
+    <div class="comment-body">
+        <h3>@Model.User.Firstname @Model.User.Lastname</h3>
+        <div class="meta">@Model.Comment.CreatedDate</div>
+        <p class="comment-content">@Model.Comment.Content</p>
+
+
+        <!-- Hidden edit form -->
+        <div class="edit-comment-form" style="display:none;">
+            <textarea id="edit-comment-text-@Model.Comment.Id" class="form-control" rows="3">@Model.Comment.Content</textarea>
+            <button class="reply btn-sm rounded px-2 py-2" onclick="submitEdit('@Model.Comment.Id')">Save</button>
+            <button class="reply btn-sm rounded px-2 py-2" onclick="cancelEdit('@Model.Comment.Id')">Cancel</button>
+            <br />
+            <br />
+            <br />
+        </div>
+
+        <div class="reply-comment-form" style="display:none;">
+            <form asp-action="AddCommentReply" class="p-5 bg-light" method="post">
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea type="text" name="message" id="message" name="message" cols="30" rows="10" class="form-control"></textarea>
+                </div>
+                <input type="hidden" id="postId" name="postId" value="@Model.PostId">
+                <input type="hidden" id="parentId" name="parentId" value="@Model.Comment.Id">
+                <div class="form-group">
+                    <input type="submit" value="Save" class="reply btn-sm rounded px-2 py-2">
+
+                    <input href="javascript:void(0);" type="submit" value="Cancel" class="reply btn-sm rounded px-2 py-2" onclick="cancelReply('@Model.Comment.Id')">
+
+                </div>
+            </form>
+        </div>
+
+        @* <input type="submit" value="Reply" class="reply btn-sm rounded px-2 py-2" onclick="showReplyForm('@Model.Comment.Id')"> *@
+        <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="showReplyForm('@Model.Comment.Id')">Reply</a></p>
+
+
+        <!-- Admin/Editor controls -->
+        @if (ViewBag.Role == "Admin" || ViewBag.Role == "Editor")
+        {
+            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="showEditForm('@Model.Comment.Id')">Edit Comment</a></p>
+            <p><a href="javascript:void(0);" class="reply btn-sm rounded px-2 py-2" onclick="deleteComment('@Model.Comment.Id')">Delete Comment</a></p>
+        }
+
+        <!-- Recursively render child comments -->
+        @if (commentList.Any(c => c.Comment.ParentId == Model.Comment.Id))
+        {
+            <ul class="children">
+                @foreach (var childComment in commentList.Where(c => c.Comment.ParentId == Model.Comment.Id))
+                {
+                    @Html.Partial("_Comment", childComment)
+                }
+            </ul>
+        }
+    </div>
+</li>
