@@ -288,7 +288,8 @@ namespace BlogMVC.Controllers
             return View();
         }
 
-        public async Task<IActionResult> FollowUser(string authorId)
+        [HttpGet]
+        public async Task<IActionResult> FollowUser(string authorId, Guid postId)
         {
             var userId = HttpContext.Session.GetString("UserId");
 
@@ -301,10 +302,11 @@ namespace BlogMVC.Controllers
 
             var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Follow", follower);
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Post", "Home", new { id = postId });
         }
 
-        public async Task<IActionResult> UnFollowUser(string authorId)
+        [HttpGet]
+        public async Task<IActionResult> UnFollowUser(string authorId, Guid postId)
         {
             var userId = HttpContext.Session.GetString("UserId");
 
@@ -318,9 +320,9 @@ namespace BlogMVC.Controllers
             var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://localhost:7230/api/Account/GetAllFollowers");
             var followers = allFollowers.FirstOrDefault(x => x.AuthorId == authorId && x.SubscriberId == userId);
 
-            var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/UnFollow", followers.Id);           
+            var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/UnFollow", followers.Id);
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Post", "Home", new { id = postId });
         }
 
 
