@@ -505,6 +505,7 @@ namespace BlogMVC.Controllers
         {
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.Role = HttpContext.Session.GetString("Role");
+            var userId = HttpContext.Session.GetString("UserId");
 
 
             //var postt = await _httpClient.GetFromJsonAsync<List<PostResponse>>("https://localhost:7230/api/Post/GetPost?id="+ id);
@@ -519,6 +520,7 @@ namespace BlogMVC.Controllers
             var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://localhost:7230/api/Post/GetAllComments");
             var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
             var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://localhost:7230/api/Post/GetAllPostTags");
+            var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://localhost:7230/api/Account/GetAllFollowers");
 
             var p = new List<PostCategoryViewModel>();
 
@@ -580,12 +582,24 @@ namespace BlogMVC.Controllers
             ViewBag.Categories = new List<string>() { post2 == null ? "" : post2.Category.Name };
             ViewBag.Tags = new List<string>() { "tag" };
 
+            
+
             //hata veriyor
             if(post2 != null)
             {
+                var follower = allFollowers.FirstOrDefault(x => x.AuthorId == post2.UserId && x.SubscriberId == userId);
+                if(follower != null)
+                {
+                    ViewBag.Follower = "True";
+                }
+                else
+                {
+                    ViewBag.Follower = "False";
+                }
                 ViewBag.Author = post2.User.Firstname + " " + post2.User.Lastname;
                 ViewBag.AuthorPicture = post2.User.Photo;
                 ViewBag.Date = post2.Post.CreatedDate;
+                ViewBag.AuthorId = post2.UserId;
             }
             else
             {

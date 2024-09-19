@@ -14,6 +14,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNet.Identity;
+using Microsoft.Extensions.Hosting;
 
 
 namespace BlogMVC.Controllers
@@ -285,6 +286,41 @@ namespace BlogMVC.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        public async Task<IActionResult> FollowUser(string authorId)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+
+            var follower = new FollowerViewModel
+            {
+                AuthorId = authorId,
+                SubscriberId = userId,
+                Id = Guid.NewGuid()
+            };
+
+            var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Follow", follower);
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        public async Task<IActionResult> UnFollowUser(string authorId)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+
+            var follower = new FollowerViewModel
+            {
+                AuthorId = authorId,
+                SubscriberId = userId,
+                Id = Guid.NewGuid()
+            };
+
+            var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://localhost:7230/api/Account/GetAllFollowers");
+            var followers = allFollowers.FirstOrDefault(x => x.AuthorId == authorId && x.SubscriberId == userId);
+
+            var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/UnFollow", followers.Id);           
+
+            return RedirectToAction("Index", "Home");
         }
 
 
