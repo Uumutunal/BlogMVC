@@ -113,6 +113,7 @@
                                     else if (ViewBag.Role == "Subscriber")
                                     {
                                         <li><a href="@Url.Action("GetUserNotifications", "Home")">Notifications</a></li>
+                                        <li><a href="@Url.Action("GetAllFavoritePosts", "Home")">Favorites</a></li>
                                     }
                                     <li><a href="@Url.Action("Logout", "Account")">Logout</a></li>
                                 }

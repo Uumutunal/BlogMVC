@@ -257,6 +257,96 @@ namespace BlogMVC.Controllers
 
             return View(posts);
         }
+        public async Task<IActionResult> RemoveFromFavorites(Guid postId)
+        {
+            string userId = HttpContext.Session.GetString("UserId");
+
+            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://localhost:7230/api/Post/GetAllUserFavorites");
+
+            var postToDelete = allFavoritePosts.FirstOrDefault(x => x.PostId == postId && x.UserId == userId);
+            
+
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/RemoveFromFavorites", postToDelete.Id);
+
+            return RedirectToAction("GetAllFavoritePosts");
+        }
+
+
+        public async Task<IActionResult> GetAllFavoritePosts()
+        {
+            ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
+
+            string userId = HttpContext.Session.GetString("UserId");
+
+            //
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
+            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://localhost:7230/api/Post/GetAllUserFavorites");
+            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/AllPost");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://localhost:7230/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
+
+            var userFavorites = allFavoritePosts.Where(x => x.UserId == userId).ToList();
+
+            var posts = new List<PostCategoryViewModel>();
+
+            foreach (var item in postCategories)
+            {
+                var newPostCategory = new PostCategoryViewModel();
+
+                var user = allUsers.FirstOrDefault(x => x.Id == item.UserId);
+                item.User = user;
+                newPostCategory.User = user;
+
+                var category = allCategories.FirstOrDefault(x => x.Id == item.CategoryId);
+                item.Category = category;
+                newPostCategory.Category = category;
+
+                var post = allPosts.FirstOrDefault(x => x.Id == item.PostId);
+                if (!userFavorites.Any(x => x.PostId == item.PostId))
+                {
+                    continue;
+                }
+                if (post == null)
+                {
+                    continue;
+                }
+                else
+                {
+                    item.Post = post;
+                    newPostCategory.Post = post;
+                    newPostCategory.PostId = post.Id;
+                    newPostCategory.UserId = item.UserId;
+                    posts.Add(newPostCategory);
+                }
+
+
+            }
+
+
+            var categories = new List<CategoryViewModel>();
+
+            foreach (var category in allCategories)
+            {
+                foreach (var item in posts)
+                {
+                    if (item.Category.Name == category.Name)
+                    {
+                        if (!categories.Contains(category))
+                        {
+                            categories.Add(category);
+                        }
+                    }
+                }
+            }
+
+
+            ViewBag.Categories = categories;
+
+            posts = posts.ToList();
+
+            return View(posts);
+        }
 
         public async Task<IActionResult> GetAllIsDraft()
         {
@@ -328,15 +418,6 @@ namespace BlogMVC.Controllers
             return View(posts);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> UpdateDraftPost(PostViewModel post)
-        //{
-
-        //    var userId = HttpContext.Session.GetString("UserId");
-
-        //    var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/UpdateDraft", post.Id);
-        //    return RedirectToAction("Index");
-        //}
         public async Task<IActionResult> ApproveDraft(Guid Id)
         {
             await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/UpdateDraft", Id);
@@ -509,7 +590,6 @@ namespace BlogMVC.Controllers
             var userId = HttpContext.Session.GetString("UserId");
 
 
-
             //var postt = await _httpClient.GetFromJsonAsync<List<PostResponse>>("https://localhost:7230/api/Post/GetPost?id="+ id);
 
             var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://localhost:7230/api/Post/AllPostCategories");
@@ -523,6 +603,7 @@ namespace BlogMVC.Controllers
             var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
             var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://localhost:7230/api/Post/GetAllPostTags");
             var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://localhost:7230/api/Account/GetAllFollowers");
+            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://localhost:7230/api/Post/GetAllUserFavorites");
 
             var p = new List<PostCategoryViewModel>();
 
@@ -530,7 +611,7 @@ namespace BlogMVC.Controllers
             {
                 var p2 = new PostCategoryViewModel();
 
-                if(posts.FirstOrDefault(s => s.Id == item.PostId) == null)
+                if (posts.FirstOrDefault(s => s.Id == item.PostId) == null)
                 {
                     if (drafts.FirstOrDefault(s => s.Id == item.PostId) == null)
                     {
@@ -587,7 +668,7 @@ namespace BlogMVC.Controllers
             
 
             //hata veriyor
-            if(post2 != null)
+            if (post2 != null)
             {
                 var follower = allFollowers.FirstOrDefault(x => x.AuthorId == post2.UserId && x.SubscriberId == userId);
                 if(follower != null)
@@ -620,6 +701,17 @@ namespace BlogMVC.Controllers
 
             ViewBag.IsDraft = post.IsDraft.ToString();
 
+            var favoritePost = allFavoritePosts.FirstOrDefault(x => x.PostId == id && x.UserId == userId);
+
+            if(favoritePost != null)
+            {
+                ViewBag.IsFavorite = "True";
+            }
+            else
+            {
+                ViewBag.IsFavorite = "False";
+            }
+
             return View(post);
         }
 
@@ -636,7 +728,7 @@ namespace BlogMVC.Controllers
 
 
 
-            if(post == null)
+            if (post == null)
             {
                 posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://localhost:7230/api/Post/GetAllIsDraft");
                 post = posts.FirstOrDefault(x => x.Id == Id);
@@ -650,7 +742,7 @@ namespace BlogMVC.Controllers
             var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://localhost:7230/api/Post/GetAllCategories");
             var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://localhost:7230/api/Post/GetAllPostTags");
 
-            if(allPostTags != null && post != null)
+            if (allPostTags != null && post != null)
             {
                 var postTag = allPostTags.Where(x => x.PostId == post.Id).ToList();
 
@@ -745,6 +837,23 @@ namespace BlogMVC.Controllers
             }
 
 
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> AddToFavorites(Guid id)
+        {
+
+            var userId = HttpContext.Session.GetString("UserId");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Index");
+            }
+
+            var favoritePost = new FavoritePostRequest() { PostId = id, UserId = userId };
+
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Post/AddToFavorites", favoritePost);
 
             return RedirectToAction("Index");
         }
