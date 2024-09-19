@@ -46,7 +46,7 @@ namespace BlogMVC.Controllers
                 Username = ""
             };
 
-            var login = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Login", user);
+            var login = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Account/Login", user);
 
 
 
@@ -154,7 +154,7 @@ namespace BlogMVC.Controllers
                 Lastname = lastname
             };
 
-            var register = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Register", user);
+            var register = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Account/Register", user);
 
             if (register.IsSuccessStatusCode)
             {
@@ -181,7 +181,7 @@ namespace BlogMVC.Controllers
             var loggedUserId = HttpContext.Session.GetString("UserId");
 
 
-            var loggedUser = await _httpClient.GetAsync($"https://localhost:7230/api/Account/user?id={loggedUserId}");
+            var loggedUser = await _httpClient.GetAsync($"https://blogsitesi.azurewebsites.net/api/Account/user?id={loggedUserId}");
 
             //_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
@@ -244,7 +244,7 @@ namespace BlogMVC.Controllers
             var userUpdate = new UserViewModel() { Email = user.Email, Username = user.Username, Password = user.Password, Firstname = user.Firstname, Lastname = user.Lastname, Photo = photoPath, Id = user.Id, ConfirmPassword = user.ConfirmPassword };
 
 
-            var result = await _httpClient.PutAsJsonAsync("https://localhost:7230/api/Account/Update", userUpdate);
+            var result = await _httpClient.PutAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Account/Update", userUpdate);
 
 
 
@@ -264,7 +264,7 @@ namespace BlogMVC.Controllers
         public async Task<IActionResult> DeleteAccount()
         {
             var userId = HttpContext.Session.GetString("UserId");
-            var user = await _httpClient.GetAsync($"https://localhost:7230/api/Account/user?id={userId}");
+            var user = await _httpClient.GetAsync($"https://blogsitesi.azurewebsites.net/api/Account/user?id={userId}");
             var loggedUser = await user.Content.ReadFromJsonAsync<UserViewModel>();
             
             string imageFolderPath = Path.Combine(_webHostEnvironment.WebRootPath, "images");
@@ -277,7 +277,7 @@ namespace BlogMVC.Controllers
                 System.IO.File.Delete(filePath);
             }
 
-            var result = await _httpClient.PostAsync($"https://localhost:7230/api/Account/DeleteAccount?id={userId}", null);
+            var result = await _httpClient.PostAsync($"https://blogsitesi.azurewebsites.net/api/Account/DeleteAccount?id={userId}", null);
 
 
             return RedirectToAction("Logout");
@@ -300,7 +300,7 @@ namespace BlogMVC.Controllers
                 Id = Guid.NewGuid()
             };
 
-            var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/Follow", follower);
+            var followUser = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Account/Follow", follower);
 
             return RedirectToAction("Post", "Home", new { id = postId });
         }
@@ -317,10 +317,10 @@ namespace BlogMVC.Controllers
                 Id = Guid.NewGuid()
             };
 
-            var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://localhost:7230/api/Account/GetAllFollowers");
+            var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/GetAllFollowers");
             var followers = allFollowers.FirstOrDefault(x => x.AuthorId == authorId && x.SubscriberId == userId);
 
-            var followUser = await _httpClient.PostAsJsonAsync("https://localhost:7230/api/Account/UnFollow", followers.Id);
+            var followUser = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Account/UnFollow", followers.Id);
 
             return RedirectToAction("Post", "Home", new { id = postId });
         }

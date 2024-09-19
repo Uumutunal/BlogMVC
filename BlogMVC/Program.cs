@@ -17,7 +17,18 @@ namespace BlogMVC
 				options.Cookie.IsEssential = true; // Make the session cookie essential
 			});
 
-			var app = builder.Build();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigins",
+                    builder =>
+                    {
+                        builder.WithOrigins("https://blogsitesi.azurewebsites.net/api")
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
+                    });
+            });
+
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -26,6 +37,8 @@ namespace BlogMVC
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseCors("AllowSpecificOrigins");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
