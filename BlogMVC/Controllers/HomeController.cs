@@ -99,10 +99,10 @@ namespace BlogMVC.Controllers
                 HttpContext.Session.SetString("IsAdmin", "false");
             }
 
-            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPostCategories");
-            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPost");
-            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/AllUser");
-            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPostCategories");
+            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPost");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogy1.azurewebsites.net/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
 
             var posts = new List<PostCategoryViewModel>();
 
@@ -162,11 +162,11 @@ namespace BlogMVC.Controllers
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.Role = HttpContext.Session.GetString("Role");
 
-            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPostCategories");
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPostCategories");
 
-            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPost");
-            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/AllUser");
-            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
+            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPost");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogy1.azurewebsites.net/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
 
             foreach (var item in postCategories)
             {
@@ -196,10 +196,10 @@ namespace BlogMVC.Controllers
 
 
 
-            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPostCategories");
-            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllUnApprovedPost");
-            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/AllUser");
-            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPostCategories");
+            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllUnApprovedPost");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogy1.azurewebsites.net/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
 
 
             var posts = new List<PostCategoryViewModel>();
@@ -253,7 +253,7 @@ namespace BlogMVC.Controllers
 
             ViewBag.Categories = categories;
 
-            var allUnApprovedPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllUnApprovedPost");
+            var allUnApprovedPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllUnApprovedPost");
 
             return View(posts);
         }
@@ -261,12 +261,12 @@ namespace BlogMVC.Controllers
         {
             string userId = HttpContext.Session.GetString("UserId");
 
-            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllUserFavorites");
+            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllUserFavorites");
 
             var postToDelete = allFavoritePosts.FirstOrDefault(x => x.PostId == postId && x.UserId == userId);
             
 
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/RemoveFromFavorites", postToDelete.Id);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/RemoveFromFavorites", postToDelete.Id);
 
             return RedirectToAction("GetAllFavoritePosts");
         }
@@ -280,11 +280,11 @@ namespace BlogMVC.Controllers
             string userId = HttpContext.Session.GetString("UserId");
 
             //
-            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPostCategories");
-            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllUserFavorites");
-            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPost");
-            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/AllUser");
-            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPostCategories");
+            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllUserFavorites");
+            var allPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPost");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogy1.azurewebsites.net/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
 
             var userFavorites = allFavoritePosts.Where(x => x.UserId == userId).ToList();
 
@@ -356,10 +356,10 @@ namespace BlogMVC.Controllers
             string userId = HttpContext.Session.GetString("UserId");
 
             //
-            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPostCategories");
-            var allDraftPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllIsDraft");
-            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/AllUser");
-            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPostCategories");
+            var allDraftPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllIsDraft");
+            var allUsers = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogy1.azurewebsites.net/api/Account/AllUser");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
 
 
             var posts = new List<PostCategoryViewModel>();
@@ -420,7 +420,7 @@ namespace BlogMVC.Controllers
 
         public async Task<IActionResult> ApproveDraft(Guid Id)
         {
-            await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/UpdateDraft", Id);
+            await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/UpdateDraft", Id);
 
             return RedirectToAction("GetAllIsDraft");
 
@@ -429,20 +429,20 @@ namespace BlogMVC.Controllers
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ApprovePost(Guid Id)
         {
-            await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/ApprovePost", Id);
+            await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/ApprovePost", Id);
 
             return RedirectToAction("ListUnapprovedPosts");
         }
 
         public async Task<IActionResult> DeletePost(Guid Id)
         {
-            await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/DeletePost", Id);
+            await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/DeletePost", Id);
 
             return RedirectToAction("ListUnapprovedPosts");
         }
         public async Task<IActionResult> DeleteDraft(Guid Id)
         {
-            await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/DeletePost", Id);
+            await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/DeletePost", Id);
 
             return RedirectToAction("GetAllIsDraft");
         }
@@ -453,7 +453,7 @@ namespace BlogMVC.Controllers
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.Role = HttpContext.Session.GetString("Role");
 
-            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogsitesi.azurewebsites.net/api/Account/GetAllRoles");
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogy1.azurewebsites.net/api/Account/GetAllRoles");
 
             return View(roles);
         }
@@ -468,7 +468,7 @@ namespace BlogMVC.Controllers
             if (!string.IsNullOrEmpty(selectedRole))
             {
 
-                var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Admin/DeleteRole", roles);
+                var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Admin/DeleteRole", roles);
             }
             return RedirectToAction("ListRoles");
         }
@@ -478,7 +478,7 @@ namespace BlogMVC.Controllers
         public async Task<IActionResult> AddRole(string role)
         {
             var roles = new List<string>() { role };
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Admin/Add-Role", roles);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Admin/Add-Role", roles);
 
             return RedirectToAction("ListRoles");
         }
@@ -489,9 +489,9 @@ namespace BlogMVC.Controllers
         {
 
             var updateRoleRequest = new UpdateRoleRequest { UserId = email, RoleName = roleName };
-            var result = await _httpClient.PutAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Admin/RemoveUserRole", updateRoleRequest);
+            var result = await _httpClient.PutAsJsonAsync("https://blogy1.azurewebsites.net/api/Admin/RemoveUserRole", updateRoleRequest);
 
-            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogsitesi.azurewebsites.net/api/Account/GetUserRoleById?id=" + email);
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogy1.azurewebsites.net/api/Account/GetUserRoleById?id=" + email);
 
 
             return Json(roles);
@@ -502,7 +502,7 @@ namespace BlogMVC.Controllers
         public async Task<IActionResult> GetUserRoles(string id)
         {
 
-            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogsitesi.azurewebsites.net/api/Account/GetUserRoleById?id=" + id);
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogy1.azurewebsites.net/api/Account/GetUserRoleById?id=" + id);
 
             return Json(roles);
         }
@@ -513,8 +513,8 @@ namespace BlogMVC.Controllers
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.Role = HttpContext.Session.GetString("Role");
 
-            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogsitesi.azurewebsites.net/api/Account/GetAllRoles");
-            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/AllUser");
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogy1.azurewebsites.net/api/Account/GetAllRoles");
+            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogy1.azurewebsites.net/api/Account/AllUser");
 
 
 
@@ -536,9 +536,9 @@ namespace BlogMVC.Controllers
         public async Task<IActionResult> AssignRole(string user, string role)
         {
             var updateRoleRequest = new UpdateRoleRequest { UserId = user, RoleName = role };
-            var result = await _httpClient.PutAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Admin/UpdateRole", updateRoleRequest);
+            var result = await _httpClient.PutAsJsonAsync("https://blogy1.azurewebsites.net/api/Admin/UpdateRole", updateRoleRequest);
 
-            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogsitesi.azurewebsites.net/api/Account/GetUserRoleById?id=" + user);
+            var roles = await _httpClient.GetFromJsonAsync<List<string>>("https://blogy1.azurewebsites.net/api/Account/GetUserRoleById?id=" + user);
 
             return Json(roles);
         }
@@ -548,7 +548,7 @@ namespace BlogMVC.Controllers
         public async Task<IActionResult> DeleteCategory(Guid id)
         {
 
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/DeleteCategory", id);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/DeleteCategory", id);
 
 
             return RedirectToAction("ListCategories");
@@ -562,7 +562,7 @@ namespace BlogMVC.Controllers
             var category = new CategoryViewModel { Name = name };
             if (ModelState.IsValid)
             {
-                var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Admin/CreateCategory", category);
+                var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Admin/CreateCategory", category);
                 return RedirectToAction("ListCategories");
             }
             return RedirectToAction("ListCategories");
@@ -575,7 +575,7 @@ namespace BlogMVC.Controllers
             ViewBag.Role = HttpContext.Session.GetString("Role");
 
 
-            var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
+            var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
 
             return View(categories);
         }
@@ -590,20 +590,20 @@ namespace BlogMVC.Controllers
             var userId = HttpContext.Session.GetString("UserId");
 
 
-            //var postt = await _httpClient.GetFromJsonAsync<List<PostResponse>>("https://blogsitesi.azurewebsites.net/api/Post/GetPost?id="+ id);
+            //var postt = await _httpClient.GetFromJsonAsync<List<PostResponse>>("https://blogy1.azurewebsites.net/api/Post/GetPost?id="+ id);
 
-            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPostCategories");
-            var postComments = await _httpClient.GetFromJsonAsync<List<PostCommentViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllPostComments");
+            var postCategories = await _httpClient.GetFromJsonAsync<List<PostCategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPostCategories");
+            var postComments = await _httpClient.GetFromJsonAsync<List<PostCommentViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllPostComments");
 
-            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/AllUser");
-            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPost");
-            var unapprovedPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllUnApprovedPost");
-            var drafts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllIsDraft");
-            var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllComments");
-            var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
-            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllPostTags");
-            var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/GetAllFollowers");
-            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllUserFavorites");
+            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogy1.azurewebsites.net/api/Account/AllUser");
+            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPost");
+            var unapprovedPosts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllUnApprovedPost");
+            var drafts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllIsDraft");
+            var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllComments");
+            var categories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
+            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllPostTags");
+            var allFollowers = await _httpClient.GetFromJsonAsync<List<FollowerViewModel>>("https://blogy1.azurewebsites.net/api/Account/GetAllFollowers");
+            var allFavoritePosts = await _httpClient.GetFromJsonAsync<List<FavoritePostViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllUserFavorites");
 
             var p = new List<PostCategoryViewModel>();
 
@@ -726,7 +726,7 @@ namespace BlogMVC.Controllers
             ViewBag.Role = HttpContext.Session.GetString("Role");
 
 
-            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPost");
+            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPost");
             var post = posts.FirstOrDefault(x => x.Id == Id);
 
 
@@ -734,17 +734,17 @@ namespace BlogMVC.Controllers
 
             if (post == null)
             {
-                posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllIsDraft");
+                posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllIsDraft");
                 post = posts.FirstOrDefault(x => x.Id == Id);
                 if (post == null)
                 {
-                    posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllUnApprovedPost");
+                    posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllUnApprovedPost");
                     post = posts.FirstOrDefault(x => x.Id == Id);
                 }
             }
 
-            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
-            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllPostTags");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
+            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllPostTags");
 
             if (allPostTags != null && post != null)
             {
@@ -804,8 +804,8 @@ namespace BlogMVC.Controllers
 
             var userId = HttpContext.Session.GetString("UserId");
 
-            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllCategories");
-            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllPostTags");
+            var allCategories = await _httpClient.GetFromJsonAsync<List<CategoryViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllCategories");
+            var allPostTags = await _httpClient.GetFromJsonAsync<List<PostTagViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllPostTags");
 
             var postTag = allPostTags.Where(x => x.PostId == post.Id).ToList();
 
@@ -833,11 +833,11 @@ namespace BlogMVC.Controllers
 
             if (post.Id == Guid.Empty)
             {
-                var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/AddPost", postRequest);
+                var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/AddPost", postRequest);
             }
             else
             {
-                var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/UpdatePost", postRequest);
+                var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/UpdatePost", postRequest);
             }
 
 
@@ -857,7 +857,7 @@ namespace BlogMVC.Controllers
 
             var favoritePost = new FavoritePostRequest() { PostId = id, UserId = userId };
 
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/AddToFavorites", favoritePost);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/AddToFavorites", favoritePost);
 
             return RedirectToAction("Index");
         }
@@ -885,7 +885,7 @@ namespace BlogMVC.Controllers
             postRequest.PostId = postId;
             postRequest.UserId = HttpContext.Session.GetString("UserId");
 
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/AddComment", postRequest);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/AddComment", postRequest);
 
             return RedirectToAction("Post", new { id = postId });
 
@@ -915,7 +915,7 @@ namespace BlogMVC.Controllers
             postRequest.PostId = postId;
             postRequest.UserId = HttpContext.Session.GetString("UserId");
 
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/AddComment", postRequest);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/AddComment", postRequest);
 
             return RedirectToAction("Post", new { id = postId });
 
@@ -924,7 +924,7 @@ namespace BlogMVC.Controllers
         public async Task<IActionResult> DeleteComment(Guid id)
         {
 
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/DeleteComment", id);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/DeleteComment", id);
 
 
             return RedirectToAction("ListUnapprovedComments");
@@ -938,7 +938,7 @@ namespace BlogMVC.Controllers
                 Id = id,
                 Content = content
             };
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/UpdateComment", comment);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/UpdateComment", comment);
 
 
             return RedirectToAction("ListUnapprovedComments");
@@ -949,7 +949,7 @@ namespace BlogMVC.Controllers
             ViewBag.Logged = HttpContext.Session.GetString("IsLogged");
             ViewBag.Role = HttpContext.Session.GetString("Role");
             var userId = HttpContext.Session.GetString("UserId");
-            var response = await _httpClient.GetFromJsonAsync<List<NotificationViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetNotification");
+            var response = await _httpClient.GetFromJsonAsync<List<NotificationViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetNotification");
             var notifications = response.Where(x => x.UserId == userId).ToList();
 
             return View(notifications);
@@ -957,7 +957,7 @@ namespace BlogMVC.Controllers
 
         public async Task<IActionResult> EditNotification(List<Guid> id)
         { 
-            var result = await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/UpdateNotification", id);
+            var result = await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/UpdateNotification", id);
 
             return RedirectToAction("GetUserNotifications");
         }
@@ -970,11 +970,11 @@ namespace BlogMVC.Controllers
             ViewBag.Role = HttpContext.Session.GetString("Role");
 
 
-            var postComments = await _httpClient.GetFromJsonAsync<List<PostCommentViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllPostComments");
+            var postComments = await _httpClient.GetFromJsonAsync<List<PostCommentViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllPostComments");
 
-            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogsitesi.azurewebsites.net/api/Account/AllUser");
-            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/AllPost");
-            var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://blogsitesi.azurewebsites.net/api/Post/GetAllUnApprovedComments");
+            var users = await _httpClient.GetFromJsonAsync<List<UserViewModel>>("https://blogy1.azurewebsites.net/api/Account/AllUser");
+            var posts = await _httpClient.GetFromJsonAsync<List<PostViewModel>>("https://blogy1.azurewebsites.net/api/Post/AllPost");
+            var comments = await _httpClient.GetFromJsonAsync<List<CommentViewModel>>("https://blogy1.azurewebsites.net/api/Post/GetAllUnApprovedComments");
 
 
 
@@ -1013,7 +1013,7 @@ namespace BlogMVC.Controllers
         public async Task<IActionResult> ApproveComment(Guid id)
         {
 
-            await _httpClient.PostAsJsonAsync("https://blogsitesi.azurewebsites.net/api/Post/ApproveComment", id);
+            await _httpClient.PostAsJsonAsync("https://blogy1.azurewebsites.net/api/Post/ApproveComment", id);
 
             return RedirectToAction("ListUnapprovedComments");
         }

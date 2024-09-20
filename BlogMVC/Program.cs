@@ -22,7 +22,7 @@ namespace BlogMVC
                 options.AddPolicy("AllowSpecificOrigins",
                     builder =>
                     {
-                        builder.WithOrigins("https://blogsitesi.azurewebsites.net/api")
+                        builder.WithOrigins("https://blogy1.azurewebsites.net/api")
                                .AllowAnyHeader()
                                .AllowAnyMethod();
                     });
